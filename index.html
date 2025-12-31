@@ -1,9 +1,9 @@
-
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>루투페이 - 내안의 모든 기프트카드</title>
+    <title>루투페이</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -25,6 +25,7 @@
             scroll-behavior: smooth;
             -webkit-user-select: none;
             user-select: none;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
         }
 
         .bg-mesh {
@@ -44,7 +45,7 @@
 
         .hero-title {
             font-weight: 900;
-            line-height: 1.2;
+            line-height: 1.1;
             letter-spacing: -0.05em;
         }
 
@@ -53,15 +54,17 @@
         .exchange-card {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 28px;
+            border-radius: 24px;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        .exchange-card:hover {
-            transform: translateY(-10px);
-            background: rgba(255, 255, 255, 0.06);
-            border-color: rgba(168, 85, 247, 0.4);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        @media (min-width: 1024px) {
+            .exchange-card:hover {
+                transform: translateY(-10px);
+                background: rgba(255, 255, 255, 0.06);
+                border-color: rgba(168, 85, 247, 0.4);
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            }
         }
 
         .floating-card {
@@ -120,33 +123,46 @@
 
         .baemin-banner {
             background: linear-gradient(135deg, #2ac1bc 0%, #229a96 100%);
-            border-radius: 32px;
+            border-radius: 24px;
             overflow: hidden;
             position: relative;
             cursor: pointer;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
+        
         .baemin-pattern {
             position: absolute;
             right: -20px;
             bottom: -20px;
-            font-size: 180px;
+            font-size: 140px;
             color: rgba(255, 255, 255, 0.1);
             transform: rotate(-15deg);
         }
+
+        /* iPhone 12 Mini specific adjustments (approx 375px wide) */
+        @media (max-width: 390px) {
+            .hero-title { font-size: 2.5rem; }
+            .baemin-banner { padding: 1.5rem; }
+            .baemin-banner h2 { font-size: 1.75rem; }
+            .exchange-card { padding: 1.5rem; }
+            .company-info { font-size: 10px; line-height: 1.6; }
+        }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radius: 10px; }
     </style>
 </head>
 <body class="min-h-screen" oncontextmenu="return false">
     <div class="bg-mesh"></div>
 
     <!-- Header -->
-    <header class="glass-header h-20 md:h-24 flex items-center px-4 lg:px-12 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto w-full grid grid-cols-2 md:grid-cols-3 items-center">
+    <header class="glass-header h-16 md:h-24 flex items-center px-4 lg:px-12 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto w-full flex justify-between items-center">
             <div class="flex items-center space-x-2.5">
-                <div class="w-8 h-8 md:w-9 md:h-9 rounded-xl bg-gradient-to-br from-purple-500 to-purple-800 flex items-center justify-center shadow-lg cursor-pointer" onclick="location.reload()">
+                <div class="w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl bg-gradient-to-br from-purple-500 to-purple-800 flex items-center justify-center shadow-lg cursor-pointer" onclick="location.reload()">
                     <i class="fas fa-credit-card text-white text-[10px] md:text-sm"></i>
                 </div>
-                <span class="text-lg md:text-xl font-bold italic tracking-tighter cursor-pointer" onclick="location.reload()">루투<span class="text-purple-500">페이</span></span>
+                <span class="text-base md:text-xl font-bold italic tracking-tighter cursor-pointer" onclick="location.reload()">루투<span class="text-purple-500">페이</span></span>
             </div>
 
             <div id="top-notice-container" class="hidden md:flex justify-center">
@@ -161,12 +177,12 @@
                 </div>
             </div>
 
-            <div class="flex items-center justify-end space-x-4">
-                <div id="connection-status" class="hidden md:flex items-center space-x-2 mr-2">
+            <div class="flex items-center space-x-2 md:space-x-4">
+                <div id="connection-status" class="hidden sm:flex items-center space-x-2 mr-2">
                     <span id="sync-dot" class="w-1.5 h-1.5 bg-yellow-500 rounded-full animate-pulse"></span>
-                    <span id="sync-text" class="text-[9px] text-white/40 font-bold uppercase tracking-wider">Connecting...</span>
+                    <span id="sync-text" class="text-[8px] md:text-[9px] text-white/40 font-bold uppercase tracking-wider">Sync...</span>
                 </div>
-                <button class="px-4 py-2 md:px-5 md:py-2.5 bg-white/5 border border-white/10 rounded-full text-[10px] md:text-xs font-black hover:bg-white/10 transition-all">
+                <button class="px-3 py-1.5 md:px-5 md:py-2.5 bg-white/5 border border-white/10 rounded-full text-[9px] md:text-xs font-black hover:bg-white/10 transition-all">
                     포인트 조회
                 </button>
             </div>
@@ -174,124 +190,153 @@
     </header>
 
     <!-- Hero Section -->
-    <section class="relative pt-20 pb-32 px-6">
-        <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div class="space-y-8 relative z-10 text-center lg:text-left">
+    <section class="relative pt-12 md:pt-20 pb-20 md:pb-32 px-5 md:px-6">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            <div class="space-y-6 md:space-y-8 relative z-10 text-center lg:text-left">
                 <div class="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 mx-auto lg:mx-0">
-                    <span class="flex h-2 w-2 rounded-full bg-purple-500 animate-pulse"></span>
-                    <span class="text-[10px] font-black uppercase tracking-widest text-purple-400">Premium Real-time Service</span>
+                    <span class="flex h-1.5 w-1.5 rounded-full bg-purple-500 animate-pulse"></span>
+                    <span class="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-purple-400 font-mono">Premium Cloud Sync</span>
                 </div>
-                <h1 class="hero-title text-5xl md:text-7xl">포인트로<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">기프트카드</span><br>즉시 교환.</h1>
-                <p class="text-lg text-white/50 max-w-md font-medium leading-relaxed mx-auto lg:mx-0">
-                    실시간 클라우드 시스템으로 연동되어 모든 주문과 결제가 안전하고 빠르게 처리됩니다.
+                <h1 class="hero-title text-4xl md:text-7xl">포인트로<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">기프트카드</span><br>즉시 교환.</h1>
+                <p class="text-sm md:text-lg text-white/50 max-w-md font-medium leading-relaxed mx-auto lg:mx-0 px-4 md:px-0">
+                    실시간 클라우드로 연동되어 입금 즉시<br class="md:hidden"> 안전하고 빠르게 처리됩니다.
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4 pt-4 justify-center lg:justify-start">
-                    <button onclick="document.getElementById('giftcards').scrollIntoView({behavior: 'smooth'})" class="px-10 py-5 bg-purple-600 rounded-2xl font-black text-lg shadow-[0_15px_30px_rgba(168,85,247,0.3)] hover:scale-105 active:scale-95 transition-all">
+                    <button onclick="document.getElementById('giftcards').scrollIntoView({behavior: 'smooth'})" class="px-8 py-4 md:px-10 md:py-5 bg-purple-600 rounded-xl md:rounded-2xl font-black text-base md:text-lg shadow-[0_15px_30px_rgba(168,85,247,0.3)] active:scale-95 transition-all">
                         쇼핑 시작하기
                     </button>
-                    <div class="flex items-center space-x-4 px-6 py-5 bg-white/5 border border-white/10 rounded-2xl cursor-pointer hover:bg-white/10 transition-all group">
-                        <span class="text-xs font-bold text-white/60 group-hover:text-purple-400 transition-colors">오늘 <span id="main-sales-count" class="stat-font text-white">0</span>개 상품 판매됨</span>
+                    <div class="flex items-center justify-center space-x-3 px-6 py-4 md:py-5 bg-white/5 border border-white/10 rounded-xl md:rounded-2xl">
+                        <span class="text-[11px] md:text-xs font-bold text-white/60">오늘 <span id="main-sales-count" class="stat-font text-white font-black">0</span>개 판매됨</span>
                     </div>
                 </div>
             </div>
 
-            <div class="relative">
-                <div class="floating-card glass-card p-8 rounded-[40px] bg-white/5 border border-white/10 backdrop-blur-xl relative z-20 w-full max-w-[420px] mx-auto lg:ml-auto">
-                    <div class="flex justify-between items-start mb-8">
+            <div class="relative mt-8 lg:mt-0">
+                <div class="floating-card glass-card p-6 md:p-8 rounded-[32px] md:rounded-[40px] bg-white/5 border border-white/10 backdrop-blur-xl relative z-20 w-full max-w-[420px] mx-auto lg:ml-auto">
+                    <div class="flex justify-between items-start mb-6 md:mb-8">
                         <div>
-                            <h3 class="text-xl font-bold mb-1">실시간 구매 현황</h3>
-                            <p class="text-xs text-white/40">루투페이 실시간 데이터 피드</p>
+                            <h3 class="text-lg md:text-xl font-bold mb-1">실시간 구매 현황</h3>
+                            <p class="text-[10px] md:text-xs text-white/40">루투페이 실시간 데이터 피드</p>
                         </div>
-                        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center">
-                            <i class="fas fa-satellite-dish text-white"></i>
+                        <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center">
+                            <i class="fas fa-satellite-dish text-white text-sm md:text-base"></i>
                         </div>
                     </div>
-                    <div id="live-purchase-container" class="space-y-3 h-[310px] overflow-y-auto pr-2">
-                        <div class="p-10 text-center text-white/20 text-xs">데이터 연결 중...</div>
+                    <div id="live-purchase-container" class="space-y-3 h-[260px] md:h-[310px] overflow-y-auto pr-2 custom-scrollbar">
+                        <div class="py-10 text-center text-white/20 text-xs italic">데이터 연결 중...</div>
                     </div>
                 </div>
-                <div class="absolute -top-10 -right-10 w-64 h-64 bg-purple-600/20 rounded-full blur-[100px] -z-10"></div>
+                <div class="absolute -top-10 -right-10 w-48 md:w-64 h-48 md:h-64 bg-purple-600/20 rounded-full blur-[80px] md:blur-[100px] -z-10"></div>
             </div>
         </div>
     </section>
 
     <!-- Baemin Special Banner -->
-    <section class="max-w-7xl mx-auto px-6 mb-12">
-        <div id="baemin-banner-trigger" class="baemin-banner p-8 md:p-12 flex flex-col md:flex-row items-center justify-between shadow-2xl">
+    <section class="max-w-7xl mx-auto px-5 md:px-6 mb-12">
+        <div id="baemin-banner-trigger" class="baemin-banner p-6 md:p-12 flex flex-col md:flex-row items-center justify-between shadow-2xl">
             <i class="fas fa-motorcycle baemin-pattern"></i>
             <div class="relative z-10 text-center md:text-left mb-6 md:mb-0">
-                <div class="inline-block px-4 py-1.5 bg-white/20 backdrop-blur-md rounded-full text-[10px] font-black text-white uppercase tracking-widest mb-4">Special Event</div>
-                <h2 class="text-3xl md:text-5xl font-black text-white mb-2 italic">배달의민족 <span id="baemin-rate-text" class="text-yellow-300">12%</span> 파격 할인</h2>
-                <p class="text-white/80 font-bold">지금 바로 포인트로 배민 기프트카드를 가장 저렴하게 만나보세요.</p>
+                <div class="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[9px] font-black text-white uppercase tracking-widest mb-3">Limited Offer</div>
+                <h2 id="baemin-title" class="text-2xl md:text-5xl font-black text-white mb-1 italic leading-tight">배달의민족 <br class="md:hidden"><span id="baemin-rate-text" class="text-yellow-300">12%</span> 할인</h2>
+                <p id="baemin-desc" class="text-[11px] md:text-base text-white/90 font-bold">지금 포인트로 배민 기프트카드를 만나보세요.</p>
             </div>
-            <div class="relative z-10">
-                <button class="px-8 py-4 bg-white text-[#2ac1bc] rounded-2xl font-black text-lg shadow-xl hover:bg-yellow-300 hover:text-gray-900 transition-all">
-                    지금 혜택받기
+            <div class="relative z-10 w-full md:w-auto">
+                <button class="w-full md:w-auto px-8 py-3.5 md:py-4 bg-white text-[#2ac1bc] rounded-xl md:rounded-2xl font-black text-sm md:text-lg shadow-xl active:scale-95 transition-all">
+                    혜택 받기
                 </button>
             </div>
         </div>
     </section>
 
     <!-- Gift Card Grid -->
-    <section id="giftcards" class="max-w-7xl mx-auto px-6 py-20 scroll-mt-24">
-        <div class="flex items-center justify-between mb-16">
-            <h2 class="text-4xl font-bold tracking-tight">인기 기프트카드</h2>
-            <div class="h-1 flex-1 mx-8 bg-white/5 rounded-full hidden md:block"></div>
+    <section id="giftcards" class="max-w-7xl mx-auto px-5 md:px-6 py-12 md:py-20 scroll-mt-20">
+        <div class="flex items-center justify-between mb-10 md:mb-16">
+            <h2 class="text-2xl md:text-4xl font-bold tracking-tight">인기 기프트카드</h2>
+            <div class="h-px flex-1 mx-4 md:mx-8 bg-white/10 rounded-full"></div>
         </div>
-        <div id="giftcard-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <!-- Items loaded from Firestore -->
-            <div class="col-span-full py-20 text-center text-white/20">상품 데이터를 불러오는 중입니다...</div>
+        <div id="giftcard-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-8">
+            <div class="col-span-full py-20 text-center text-white/20 text-sm">상품 데이터를 불러오는 중입니다...</div>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="border-t border-white/5 pt-20 pb-10 px-6 text-center">
-        <p class="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em]">© 2025 RootooPay Cloud Sync. All Rights Reserved.</p>
+    <footer class="border-t border-white/5 pt-16 pb-12 px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col items-center text-center space-y-6">
+                <!-- Brand Logo in Footer -->
+                <div class="flex items-center space-x-2 text-white/30">
+                    <i class="fas fa-credit-card text-xs"></i>
+                    <span class="text-sm font-bold italic tracking-tighter">루투<span class="text-purple-500/50">페이</span></span>
+                </div>
+                
+                <!-- Company Details (Updated) -->
+                <div class="company-info space-y-2 text-[11px] md:text-xs text-white/40 font-medium leading-relaxed">
+                    <p class="flex flex-wrap justify-center gap-x-3 gap-y-1">
+                        <span>상호: 루투페이 주식회사</span>
+                        <span class="hidden md:inline text-white/10">|</span>
+                        <span>대표자: 홍길동</span>
+                        <span class="hidden md:inline text-white/10">|</span>
+                        <span>사업자등록번호: 123-45-67890</span>
+                    </p>
+                    <p>주소: 서울특별시 강남구 테헤란로 123 루투빌딩 4층</p>
+                    <p class="flex flex-wrap justify-center gap-x-3 gap-y-1">
+                        <span>통신판매업 신고번호: 2024-서울강남-0000호</span>
+                        <span class="hidden md:inline text-white/10">|</span>
+                        <span>고객센터: 1588-0000 (평일 09:00 - 18:00)</span>
+                    </p>
+                    <p class="text-white/20 mt-4">루투페이는 상품권 유통 대행 시스템을 제공하며, 각 기프트카드의 소유권은 해당 발행사에 있습니다.</p>
+                </div>
+
+                <div class="pt-8">
+                    <p class="text-[9px] md:text-[10px] font-bold text-white/10 uppercase tracking-[0.2em]">© 2025 RootooPay Cloud Sync. All Rights Reserved.</p>
+                </div>
+            </div>
+        </div>
     </footer>
 
     <!-- Toast Notification -->
     <div id="bottom-toast-container" class="fixed bottom-6 right-6 z-[100] flex flex-col items-end space-y-3 pointer-events-none"></div>
 
     <!-- Payment Modal -->
-    <div id="payment-modal" class="modal-backdrop fixed inset-0 z-[200] items-center justify-center p-4" onclick="closePaymentModal()">
-        <div class="modal-content w-full max-w-[840px] bg-[#140e29] border border-white/10 rounded-[40px] shadow-2xl overflow-hidden flex flex-col md:flex-row" onclick="event.stopPropagation()">
-            <div class="w-full md:w-[320px] bg-gradient-to-b from-purple-900/40 to-[#140e29] p-8 md:p-10 border-b md:border-b-0 md:border-r border-white/5">
-                <div id="modal-item-icon-bg" class="w-16 h-16 rounded-3xl mb-8 flex items-center justify-center shadow-2xl">
-                    <i id="modal-item-icon" class="text-3xl text-white"></i>
+    <div id="payment-modal" class="modal-backdrop fixed inset-0 z-[200] items-center justify-center p-4 md:p-6" onclick="closePaymentModal()">
+        <div class="modal-content w-full max-w-[840px] max-h-[90vh] md:max-h-none overflow-y-auto bg-[#140e29] border border-white/10 rounded-[32px] md:rounded-[40px] shadow-2xl flex flex-col md:flex-row" onclick="event.stopPropagation()">
+            <div class="w-full md:w-[320px] bg-gradient-to-b from-purple-900/40 to-[#140e29] p-7 md:p-10 border-b md:border-b-0 md:border-r border-white/5">
+                <div id="modal-item-icon-bg" class="w-14 h-14 md:w-16 md:h-16 rounded-2xl md:rounded-3xl mb-6 md:mb-8 flex items-center justify-center shadow-2xl bg-gradient-to-br from-purple-500 to-indigo-600">
+                    <i id="modal-item-icon" class="text-2xl md:text-3xl text-white"></i>
                 </div>
-                <h4 class="text-white/40 text-[10px] font-black uppercase tracking-widest mb-2">Order Summary</h4>
-                <h3 id="modal-item-name" class="text-2xl font-black mb-1 text-white">상품명</h3>
-                <div class="space-y-4 py-6 border-y border-white/5 my-6">
-                    <div class="flex justify-between items-center text-xs">
+                <h4 class="text-white/40 text-[9px] md:text-[10px] font-black uppercase tracking-widest mb-1 md:mb-2">Order Summary</h4>
+                <h3 id="modal-item-name" class="text-xl md:text-2xl font-black mb-1 text-white">상품명</h3>
+                <div class="space-y-4 py-4 md:py-6 border-y border-white/5 my-4 md:my-6">
+                    <div class="flex justify-between items-center text-[11px] md:text-xs">
                         <span class="text-white/40">판매 가격</span>
                         <span id="modal-item-price" class="font-bold text-white">0원</span>
                     </div>
                 </div>
-                <p class="text-[10px] font-black text-purple-400 uppercase tracking-widest mb-1">Total Payment</p>
-                <p id="modal-final-price" class="text-3xl font-black text-white stat-font">0원</p>
+                <p class="text-[9px] md:text-[10px] font-black text-purple-400 uppercase tracking-widest mb-1">Total Payment</p>
+                <p id="modal-final-price" class="text-2xl md:text-3xl font-black text-white stat-font">0원</p>
             </div>
-            <div class="flex-1 p-8 md:p-10 bg-[#1a142e] relative">
-                <button onclick="closePaymentModal()" class="absolute top-6 right-6 text-white/20 hover:text-white transition-colors"><i class="fas fa-times text-xl"></i></button>
-                <div class="mb-10">
-                    <h3 class="text-xl font-black">무통장 입금결제</h3>
-                    <p class="text-xs text-white/40 mt-1 uppercase tracking-widest">Cloud Payment System</p>
+            <div class="flex-1 p-7 md:p-10 bg-[#1a142e] relative">
+                <button onclick="closePaymentModal()" class="absolute top-6 right-6 text-white/20 hover:text-white transition-colors"><i class="fas fa-times text-lg"></i></button>
+                <div class="mb-8 md:mb-10">
+                    <h3 class="text-lg md:text-xl font-black">무통장 입금결제</h3>
+                    <p class="text-[10px] md:text-xs text-white/40 mt-1 uppercase tracking-widest font-mono">Cloud Payment System</p>
                 </div>
                 <div class="space-y-6">
                     <div class="space-y-3">
-                        <label class="text-[10px] font-black text-purple-400 uppercase tracking-widest">입금 계좌</label>
-                        <div class="p-5 custom-input rounded-2xl flex items-center justify-between">
+                        <label class="text-[9px] md:text-[10px] font-black text-purple-400 uppercase tracking-widest">입금 계좌</label>
+                        <div class="p-4 md:p-5 custom-input rounded-xl md:rounded-2xl flex items-center justify-between">
                             <div>
-                                <p class="text-xs text-white/40 font-bold">신한은행</p>
-                                <p class="text-lg font-bold tracking-tight stat-font">110-123-456789</p>
-                                <p class="text-xs text-white/60 font-medium">예금주: 루투페이(주)</p>
+                                <p class="text-[10px] md:text-xs text-white/40 font-bold">신한은행</p>
+                                <p class="text-base md:text-lg font-bold tracking-tight stat-font">110-123-456789</p>
+                                <p class="text-[10px] md:text-xs text-white/60 font-medium">예금주: 루투페이(주)</p>
                             </div>
                         </div>
                     </div>
                     <div class="space-y-3">
-                        <label class="text-[10px] font-black text-purple-400 uppercase tracking-widest">입금자 성함</label>
-                        <input type="text" id="sender-name" placeholder="입금하시는 분 성함" class="w-full p-5 custom-input rounded-2xl text-sm focus:outline-none text-white">
+                        <label class="text-[9px] md:text-[10px] font-black text-purple-400 uppercase tracking-widest">입금자 성함</label>
+                        <input type="text" id="sender-name" placeholder="입금하시는 분 성함" class="w-full p-4 md:p-5 custom-input rounded-xl md:rounded-2xl text-sm focus:outline-none text-white">
                     </div>
-                    <button id="submit-payment" class="w-full py-5 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl font-black text-lg shadow-xl hover:scale-[1.02] transition-all active:scale-95">
+                    <button id="submit-payment" class="w-full py-4 md:py-5 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl md:rounded-2xl font-black text-base md:text-lg shadow-xl active:scale-95 transition-all">
                         입금 완료 요청하기
                     </button>
                 </div>
@@ -307,7 +352,6 @@
             serverTimestamp, updateDoc, increment
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // ✅ 입력해주신 실제 Firebase Config 설정
         const firebaseConfig = {
             apiKey: "AIzaSyAiygY_0VqxYpwb6agBJzpq6pqDFzNk-eE",
             authDomain: "zcash-web-46657.firebaseapp.com",
@@ -326,7 +370,6 @@
         let user = null;
         let selectedProduct = null;
 
-        // UI UTILS
         function showToast(title, desc) {
             const container = document.getElementById('bottom-toast-container');
             const toast = document.createElement('div');
@@ -339,14 +382,8 @@
             setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 4000);
         }
 
-        // AUTH & SYNC (익명 로그인)
         const initAuth = async () => {
-            try {
-                await signInAnonymously(auth);
-            } catch (err) {
-                console.error("Auth error:", err);
-                showToast("인증 오류", "Firebase 콘솔에서 'Anonymous' 로그인이 활성화되어 있는지 확인해 주세요.");
-            }
+            try { await signInAnonymously(auth); } catch (err) { console.error("Auth error:", err); }
         };
 
         onAuthStateChanged(auth, (u) => {
@@ -365,50 +402,42 @@
         function startRealtimeSync() {
             if (!user) return;
 
-            // 1. Settings Sync
             const settingsRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main');
             onSnapshot(settingsRef, (snap) => {
                 if (snap.exists()) {
                     const data = snap.data();
                     document.getElementById('dynamic-notice').innerText = data.topNotice || "루투페이 실시간 클라우드 연동 중";
                     document.getElementById('main-sales-count').innerText = data.totalSales || "0";
+                    if (data.bannerTitle) document.getElementById('baemin-title').innerHTML = `${data.bannerTitle} <br class="md:hidden"><span id="baemin-rate-text" class="text-yellow-300">${data.bannerRate || '12%'}</span> 할인`;
+                    if (data.bannerDesc) document.getElementById('baemin-desc').innerText = data.bannerDesc;
                 }
-            }, (err) => {
-                console.warn("Settings sync restricted. Firestore Rules 확인 필요.");
             });
 
-            // 2. Gift Card Products Sync
             const itemsRef = collection(db, 'artifacts', appId, 'public', 'data', 'products');
             onSnapshot(itemsRef, (snapshot) => {
                 const grid = document.getElementById('giftcard-grid');
                 grid.innerHTML = '';
-
                 if (snapshot.empty) {
-                    grid.innerHTML = '<div class="col-span-full py-20 text-center text-white/20">등록된 상품이 없습니다. (Firestore 데이터 필요)</div>';
+                    grid.innerHTML = '<div class="col-span-full py-20 text-center text-white/20">등록된 상품이 없습니다.</div>';
                     return;
                 }
-
                 snapshot.forEach(docSnap => {
                     const p = { id: docSnap.id, ...docSnap.data() };
-                    
                     const card = document.createElement('div');
-                    card.className = "exchange-card p-8 flex flex-col items-center text-center relative overflow-hidden group cursor-pointer";
+                    card.className = "exchange-card p-6 md:p-8 flex flex-col items-center text-center relative overflow-hidden group cursor-pointer";
                     card.innerHTML = `
-                        <div class="w-20 h-20 bg-gradient-to-br ${p.color || 'from-purple-500 to-indigo-600'} rounded-3xl mb-8 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                            <i class="${p.icon || 'fas fa-gift'} text-3xl text-white"></i>
+                        <div class="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl md:rounded-3xl mb-6 md:mb-8 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                            <i class="${p.icon || 'fas fa-gift'} text-2xl md:text-3xl text-white"></i>
                         </div>
-                        <h3 class="text-2xl font-black mb-2 text-white">${p.name}</h3>
-                        <p class="text-xl font-black text-purple-400 stat-font mb-8">${p.rate || 0}% 할인</p>
-                        <button class="w-full py-4 bg-white/5 border border-white/10 rounded-2xl font-bold hover:bg-white hover:text-gray-900 transition-all">구매하기</button>
+                        <h3 class="text-xl md:text-2xl font-black mb-1 md:mb-2 text-white">${p.name}</h3>
+                        <p class="text-lg md:text-xl font-black text-purple-400 stat-font mb-6 md:mb-8">${p.rate || 0}% 할인</p>
+                        <button class="w-full py-3.5 md:py-4 bg-white/5 border border-white/10 rounded-xl md:rounded-2xl font-bold hover:bg-white hover:text-gray-900 transition-all text-sm md:text-base">구매하기</button>
                     `;
                     card.onclick = () => openPayment(p);
                     grid.appendChild(card);
                 });
-            }, (err) => {
-                console.error("Products sync error:", err);
             });
 
-            // 3. Live Feed Sync
             const feedRef = collection(db, 'artifacts', appId, 'public', 'data', 'liveFeed');
             onSnapshot(feedRef, (snapshot) => {
                 const container = document.getElementById('live-purchase-container');
@@ -416,25 +445,18 @@
                 const items = [];
                 snapshot.forEach(d => items.push(d.data()));
                 items.sort((a, b) => (b.time?.seconds || 0) - (a.time?.seconds || 0));
-                
-                if (items.length === 0) {
-                    container.innerHTML = '<div class="p-10 text-center text-white/10 text-xs">구매 이력이 없습니다.</div>';
-                }
-
                 items.slice(0, 8).forEach(item => {
                     const div = document.createElement('div');
-                    div.className = "live-feed-item flex items-center justify-between p-3 bg-white/5 border border-white/5 rounded-xl mb-3";
+                    div.className = "live-feed-item flex items-center justify-between p-3 bg-white/5 border border-white/5 rounded-xl mb-2";
                     div.innerHTML = `
                         <div class="flex items-center space-x-3">
-                            <div class="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center"><i class="fas fa-ticket-alt text-[10px] text-purple-400"></i></div>
-                            <div><p class="text-[11px] font-bold text-white">${item.name}</p><p class="text-[9px] text-white/40">${item.product}</p></div>
+                            <div class="w-7 h-7 rounded-lg bg-purple-500/10 flex items-center justify-center"><i class="fas fa-ticket-alt text-[9px] text-purple-400"></i></div>
+                            <div><p class="text-[10px] font-bold text-white">${item.name}</p><p class="text-[8px] text-white/40">${item.product}</p></div>
                         </div>
-                        <div class="text-right"><p class="text-[10px] font-black text-cyan-400">${Number(item.price || 0).toLocaleString()}원</p><p class="text-[8px] text-white/20 uppercase tracking-tighter">SUCCESS</p></div>
+                        <div class="text-right"><p class="text-[9px] font-black text-cyan-400">${Number(item.price || 0).toLocaleString()}원</p></div>
                     `;
                     container.appendChild(div);
                 });
-            }, (err) => {
-                console.warn("Feed sync restricted.");
             });
         }
 
@@ -443,67 +465,42 @@
             document.getElementById('modal-item-name').innerText = p.name;
             document.getElementById('modal-item-price').innerText = Number(p.price).toLocaleString() + '원';
             document.getElementById('modal-final-price').innerText = Number(p.price).toLocaleString() + '원';
-            document.getElementById('modal-item-icon').className = `${p.icon || 'fas fa-gift'} text-3xl text-white`;
-            document.getElementById('modal-item-icon-bg').className = `w-16 h-16 rounded-3xl mb-8 flex items-center justify-center shadow-2xl bg-gradient-to-br ${p.color || 'from-purple-500 to-indigo-600'}`;
+            document.getElementById('modal-item-icon').className = `${p.icon || 'fas fa-gift'} text-2xl md:text-3xl text-white`;
             document.getElementById('payment-modal').style.display = 'flex';
         };
 
-        window.closePaymentModal = () => {
-            document.getElementById('payment-modal').style.display = 'none';
-        };
+        window.closePaymentModal = () => { document.getElementById('payment-modal').style.display = 'none'; };
 
         document.getElementById('submit-payment').onclick = async () => {
             const nameInput = document.getElementById('sender-name');
             const name = nameInput.value.trim();
             const btn = document.getElementById('submit-payment');
-
             if (!name) return showToast("오류", "입금자 성함을 입력해 주세요.");
-            if (!user) return showToast("오류", "서버와 연결 중입니다.");
-
+            if (!user) return showToast("오류", "서버 연결 중...");
             try {
                 btn.disabled = true;
                 btn.innerText = "처리 중...";
-
-                // 주문 저장
                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'orders'), {
-                    customerName: name,
-                    productName: selectedProduct.name,
-                    price: selectedProduct.price,
-                    status: '입금확인중',
-                    createdAt: serverTimestamp(),
-                    uid: user.uid
+                    customerName: name, productName: selectedProduct.name, price: selectedProduct.price,
+                    status: '입금확인중', createdAt: serverTimestamp(), uid: user.uid
                 });
-
-                // 판매량 카운트 (Settings 업데이트)
-                const settingsRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main');
-                try {
-                    await updateDoc(settingsRef, { totalSales: increment(1) });
-                } catch(e) { console.warn("Settings update failed - permission?"); }
-
-                // 실시간 피드 기록
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main'), { totalSales: increment(1) });
                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'liveFeed'), {
                     name: name.length > 2 ? name[0] + "*" + name[name.length-1] : name[0] + "*",
-                    product: selectedProduct.name,
-                    price: selectedProduct.price,
-                    time: serverTimestamp()
+                    product: selectedProduct.name, price: selectedProduct.price, time: serverTimestamp()
                 });
-
-                const modalInner = document.querySelector('.modal-content');
-                modalInner.innerHTML = `
-                    <div class="w-full p-20 flex flex-col items-center text-center space-y-6 bg-[#1a142e]">
-                        <div class="w-20 h-20 bg-emerald-500 rounded-full flex items-center justify-center shadow-[0_0_40px_rgba(16,185,129,0.3)] animate-bounce">
-                            <i class="fas fa-check text-3xl text-white"></i>
+                document.querySelector('.modal-content').innerHTML = `
+                    <div class="w-full p-12 md:p-20 flex flex-col items-center text-center space-y-6 bg-[#1a142e]">
+                        <div class="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg animate-bounce">
+                            <i class="fas fa-check text-2xl text-white"></i>
                         </div>
-                        <h3 class="text-3xl font-black text-white">확인 요청 완료</h3>
-                        <p class="text-white/40 text-sm leading-relaxed">입금이 확인되면 입력하신 번호 또는<br>문자로 기프트카드를 발송해 드립니다.</p>
-                        <button onclick="location.reload()" class="px-10 py-4 bg-purple-600 rounded-2xl font-bold hover:bg-purple-500 transition-all text-white">홈으로 돌아가기</button>
-                    </div>
-                `;
+                        <h3 class="text-2xl md:text-3xl font-black text-white">요청 완료</h3>
+                        <p class="text-white/40 text-xs md:text-sm">입금이 확인되면 즉시 발송됩니다.</p>
+                        <button onclick="location.reload()" class="px-8 py-3 bg-purple-600 rounded-xl font-bold text-white">확인</button>
+                    </div>`;
             } catch (err) {
-                console.error(err);
-                showToast("오류", "데이터 저장에 실패했습니다. Firestore 규칙 및 권한을 확인해 주세요.");
+                showToast("오류", "전송 실패");
                 btn.disabled = false;
-                btn.innerText = "입금 완료 요청하기";
             }
         };
     </script>
