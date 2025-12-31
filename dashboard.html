@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -41,6 +41,10 @@
             font-size: 0.875rem;
             transition: all 0.2s;
         }
+        .input-field:focus {
+            border-color: var(--brand-primary);
+            outline: none;
+        }
 
         .nav-btn.active {
             background: linear-gradient(to right, rgba(168, 85, 247, 0.2), transparent);
@@ -75,6 +79,9 @@
             <button onclick="switchTab('home')" class="nav-btn active w-full flex items-center space-x-3 px-6 py-4 rounded-xl text-white/50 hover:text-white" data-tab="home">
                 <i class="fas fa-th-large w-5"></i><span class="font-bold text-sm">홈 설정 제어</span>
             </button>
+            <button onclick="switchTab('items')" class="nav-btn w-full flex items-center space-x-3 px-6 py-4 rounded-xl text-white/50 hover:text-white" data-tab="items">
+                <i class="fas fa-tags w-5"></i><span class="font-bold text-sm">상품 카드 관리</span>
+            </button>
             <button onclick="switchTab('orders')" class="nav-btn w-full flex items-center space-x-3 px-6 py-4 rounded-xl text-white/50 hover:text-white" data-tab="orders">
                 <i class="fas fa-wallet w-5"></i><span class="font-bold text-sm">입금 고객 관리</span>
             </button>
@@ -92,9 +99,11 @@
     <main class="flex-1 flex flex-col h-screen overflow-hidden">
         <header class="h-24 flex items-center justify-between px-10 border-b border-white/5 bg-[#0f0a1e]/80 backdrop-blur-md z-20">
             <h2 id="tab-title" class="text-2xl font-black">홈 설정 제어</h2>
-            <button id="save-btn" onclick="saveSettings()" class="px-8 py-3.5 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl font-black text-sm transition-all active:scale-95">
-                설정값 클라우드 저장
-            </button>
+            <div id="header-actions">
+                <button id="save-btn" onclick="saveSettings()" class="px-8 py-3.5 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl font-black text-sm transition-all active:scale-95">
+                    설정값 클라우드 저장
+                </button>
+            </div>
         </header>
 
         <div class="flex-1 overflow-y-auto p-10 bg-[#0f0a1e]">
@@ -111,6 +120,16 @@
                             <input type="number" id="totalSales" class="input-field font-mono">
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- TAB: ITEM MANAGEMENT (NEW) -->
+            <div id="tab-items" class="tab-content space-y-6 animate-slide">
+                <div class="flex justify-between items-center mb-4">
+                    <p class="text-sm text-white/40 italic">* 상품 카드 정보는 메인페이지 그리드에 실시간 반영됩니다.</p>
+                </div>
+                <div id="item-grid-admin" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Cards will be injected here -->
                 </div>
             </div>
 
@@ -143,7 +162,7 @@
                         <input type="text" id="feed-price" class="input-field" placeholder="가격">
                         <button onclick="addLiveFeed()" class="bg-purple-600 rounded-xl font-bold text-sm">피드 추가</button>
                     </div>
-                    <div id="feed-list" class="mt-8 space-y-2"></div>
+                    <div id="feed-list" class="mt-8 space-y-2 h-[400px] overflow-y-auto pr-2"></div>
                 </div>
             </div>
         </div>
@@ -162,13 +181,21 @@
 
         let user = null;
 
+        // --- UI Navigation ---
         window.switchTab = (tabId) => {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.getElementById('tab-' + tabId).classList.add('active');
             document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
             document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+            
+            const titles = { home: '홈 설정 제어', items: '상품 카드 관리', orders: '입금 고객 관리', live: '실시간 피드' };
+            document.getElementById('tab-title').innerText = titles[tabId];
+            
+            // Show/Hide global save button based on tab
+            document.getElementById('save-btn').style.display = (tabId === 'home') ? 'block' : 'none';
         };
 
+        // --- Auth ---
         const initAuth = async () => {
             if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                 await signInWithCustomToken(auth, __initial_auth_token);
@@ -188,8 +215,9 @@
             }
         });
 
+        // --- Data Sync ---
         function startSyncing() {
-            // FIX: 6개 세그먼트 (index.html과 동일한 경로)
+            // 1. Home Settings
             const settingsRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main');
             onSnapshot(settingsRef, (snap) => {
                 if (snap.exists()) {
@@ -199,59 +227,141 @@
                 }
             });
 
+            // 2. Gift Card Items (실시간 연동)
+            const itemsRef = collection(db, 'artifacts', appId, 'public', 'data', 'products');
+            onSnapshot(itemsRef, (snapshot) => {
+                const grid = document.getElementById('item-grid-admin');
+                grid.innerHTML = '';
+                
+                // 데이터가 없을 경우 초기 세팅 버튼 표시
+                if (snapshot.empty) {
+                    grid.innerHTML = `<div class="col-span-full p-10 text-center glass-panel rounded-3xl">
+                        <p class="mb-4 text-white/40">등록된 상품이 없습니다.</p>
+                        <button onclick="window.seedInitialProducts()" class="px-6 py-3 bg-indigo-600 rounded-xl font-bold">기본 상품 세트 생성</button>
+                    </div>`;
+                    return;
+                }
+
+                snapshot.forEach(docSnap => {
+                    const p = docSnap.data();
+                    const card = document.createElement('div');
+                    card.className = "glass-panel p-6 rounded-[28px] space-y-4 border-l-4";
+                    card.style.borderLeftColor = p.color ? p.color.split(' ')[1].replace('to-', '') : '#a855f7';
+                    
+                    card.innerHTML = `
+                        <div class="flex items-center space-x-4 mb-2">
+                            <div class="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-xl">
+                                <i class="${p.icon || 'fas fa-gift'}"></i>
+                            </div>
+                            <div class="flex-1">
+                                <input type="text" value="${p.name}" onchange="window.updateProduct('${docSnap.id}', 'name', this.value)" class="bg-transparent border-none text-lg font-bold w-full focus:ring-0 p-0" placeholder="상품명">
+                                <p class="text-[10px] text-white/20 uppercase tracking-widest">${docSnap.id}</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-[9px] font-black text-white/40 uppercase">할인율 (%)</label>
+                                <input type="number" value="${p.rate}" onchange="window.updateProduct('${docSnap.id}', 'rate', this.value)" class="input-field text-xs">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[9px] font-black text-white/40 uppercase">표시 가격</label>
+                                <input type="text" value="${p.price}" onchange="window.updateProduct('${docSnap.id}', 'price', this.value)" class="input-field text-xs font-mono">
+                            </div>
+                        </div>
+                        <div class="pt-2 flex justify-between items-center">
+                            <span class="text-[10px] text-emerald-400 font-bold"><i class="fas fa-check-circle mr-1"></i>Live Syncing</span>
+                            <button onclick="window.deleteProduct('${docSnap.id}')" class="text-white/10 hover:text-red-500 transition-colors"><i class="fas fa-trash-alt text-sm"></i></button>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            });
+
+            // 3. Orders
             const ordersRef = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
             onSnapshot(ordersRef, (snapshot) => {
                 const tbody = document.getElementById('order-list');
                 tbody.innerHTML = '';
                 const orders = [];
                 snapshot.forEach(doc => orders.push({ id: doc.id, ...doc.data() }));
-                orders.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+                orders.sort((a, b) => (b.createdAt?.seconds || b.timestamp?.seconds || 0) - (a.createdAt?.seconds || a.timestamp?.seconds || 0));
 
                 orders.forEach(order => {
-                    const time = order.timestamp ? new Date(order.timestamp.seconds * 1000).toLocaleString() : '...';
+                    const time = (order.createdAt || order.timestamp) ? new Date((order.createdAt || order.timestamp).seconds * 1000).toLocaleString() : '...';
                     const tr = document.createElement('tr');
-                    tr.className = "border-b border-white/5";
+                    tr.className = "border-b border-white/5 hover:bg-white/[0.02]";
                     tr.innerHTML = `
                         <td class="p-6 text-white/40 font-mono text-xs">${time}</td>
                         <td class="p-6 font-bold text-white">${order.customerName}</td>
                         <td class="p-6">${order.productName}</td>
-                        <td class="p-6 text-purple-400">${order.price}원</td>
-                        <td class="p-6 text-xs text-yellow-500">${order.status}</td>
+                        <td class="p-6 text-purple-400 font-bold">${order.price}원</td>
+                        <td class="p-6">
+                            <select onchange="window.updateOrderStatus('${order.id}', this.value)" class="bg-black/40 border border-white/10 rounded-lg px-2 py-1 text-xs text-yellow-500">
+                                <option value="입금확인중" ${order.status === '입금확인중' ? 'selected' : ''}>입금확인중</option>
+                                <option value="발송완료" ${order.status === '발송완료' ? 'selected' : ''}>발송완료</option>
+                                <option value="취소됨" ${order.status === '취소됨' ? 'selected' : ''}>취소됨</option>
+                            </select>
+                        </td>
                         <td class="p-6 flex justify-center space-x-2">
-                            <button onclick="window.deleteOrder('${order.id}')" class="p-2 hover:text-red-500"><i class="fas fa-trash-alt"></i></button>
+                            <button onclick="window.deleteOrder('${order.id}')" class="p-2 hover:text-red-500 transition-colors"><i class="fas fa-trash-alt"></i></button>
                         </td>
                     `;
                     tbody.appendChild(tr);
                 });
             });
 
+            // 4. Live Feed
             const feedRef = collection(db, 'artifacts', appId, 'public', 'data', 'liveFeed');
             onSnapshot(feedRef, (snapshot) => {
                 const container = document.getElementById('feed-list');
                 container.innerHTML = '';
-                snapshot.forEach(docSnap => {
-                    const feed = docSnap.data();
+                const feeds = [];
+                snapshot.forEach(docSnap => feeds.push({ id: docSnap.id, ...docSnap.data() }));
+                feeds.sort((a, b) => (b.time?.seconds || 0) - (a.time?.seconds || 0));
+                
+                feeds.forEach(feed => {
                     const div = document.createElement('div');
-                    div.className = "p-4 bg-white/5 rounded-xl flex justify-between items-center";
+                    div.className = "p-4 bg-white/5 rounded-xl flex justify-between items-center mb-2 border border-white/5";
                     div.innerHTML = `
-                        <span class="text-xs"><b>${feed.name}</b>님이 ${feed.product} 구매</span>
-                        <button onclick="window.deleteFeed('${docSnap.id}')" class="text-white/20 hover:text-red-500"><i class="fas fa-times"></i></button>
+                        <div class="flex items-center space-x-3">
+                            <span class="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
+                            <span class="text-xs"><b>${feed.name}</b>님이 <b>${feed.product}</b> 구매 (${feed.price})</span>
+                        </div>
+                        <button onclick="window.deleteFeed('${feed.id}')" class="text-white/20 hover:text-red-500"><i class="fas fa-times"></i></button>
                     `;
                     container.appendChild(div);
                 });
             });
         }
 
+        // --- Actions ---
         window.saveSettings = async () => {
             const notice = document.getElementById('topNotice').value;
             const sales = parseInt(document.getElementById('totalSales').value);
             const settingsRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main');
             await setDoc(settingsRef, { topNotice: notice, totalSales: sales }, { merge: true });
-            alert("클라우드 저장 완료!");
+            showCustomAlert("클라우드 설정 업데이트 완료!");
+        };
+
+        window.updateProduct = async (id, field, value) => {
+            const itemRef = doc(db, 'artifacts', appId, 'public', 'data', 'products', id);
+            let finalValue = value;
+            if (field === 'rate') finalValue = parseInt(value);
+            await updateDoc(itemRef, { [field]: finalValue });
+        };
+
+        window.deleteProduct = async (id) => {
+            if(!confirm('해당 상품 카드를 삭제하시겠습니까?')) return;
+            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', id));
+        };
+
+        window.updateOrderStatus = async (id, status) => {
+            const orderRef = doc(db, 'artifacts', appId, 'public', 'data', 'orders', id);
+            await updateDoc(orderRef, { status: status });
         };
 
         window.deleteOrder = async (id) => {
-            if(!confirm('삭제하시겠습니까?')) return;
+            if(!confirm('주문 내역을 삭제하시겠습니까?')) return;
             await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', id));
         };
 
@@ -259,14 +369,45 @@
             const name = document.getElementById('feed-name').value;
             const product = document.getElementById('feed-product').value;
             const price = document.getElementById('feed-price').value;
+            if(!name || !product) return;
+            
             await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'liveFeed'), {
                 name, product, price, time: serverTimestamp()
             });
+            
+            document.getElementById('feed-name').value = '';
+            document.getElementById('feed-product').value = '';
+            document.getElementById('feed-price').value = '';
         };
 
         window.deleteFeed = async (id) => {
             await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'liveFeed', id));
         };
+
+        // 초기 상품 시딩 (필요 시)
+        window.seedInitialProducts = async () => {
+            const products = [
+                { id: 'baemin', name: '배달의민족', rate: 12, icon: 'fas fa-motorcycle', color: 'from-[#2ac1bc] to-[#229a96]', price: '44,000' },
+                { id: 'ssg', name: '신세계 상품권', rate: 5, icon: 'fas fa-store', color: 'from-orange-400 to-red-500', price: '47,500' },
+                { id: 'google', name: '구글 기프트카드', rate: 10, icon: 'fab fa-google-play', color: 'from-blue-400 to-indigo-600', price: '45,000' },
+                { id: 'olive', name: '올리브영 기프트', rate: 7, icon: 'fas fa-leaf', color: 'from-green-400 to-green-600', price: '46,500' },
+                { id: 'starbucks', name: '스타벅스 쿠폰', rate: 8, icon: 'fas fa-coffee', color: 'from-green-800 to-emerald-900', price: '9,200' },
+                { id: 'naver', name: '네이버페이', rate: 3, icon: 'fas fa-p', color: 'from-green-500 to-emerald-700', price: '48,500' }
+            ];
+            
+            for (const p of products) {
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', p.id), p);
+            }
+            showCustomAlert("기본 상품 세트가 생성되었습니다.");
+        };
+
+        function showCustomAlert(msg) {
+            const alertBox = document.createElement('div');
+            alertBox.className = "fixed bottom-10 left-1/2 transform -translate-x-1/2 px-8 py-4 bg-emerald-600 text-white font-bold rounded-2xl shadow-2xl z-[300] animate-bounce";
+            alertBox.innerText = msg;
+            document.body.appendChild(alertBox);
+            setTimeout(() => alertBox.remove(), 3000);
+        }
     </script>
 </body>
 </html>
