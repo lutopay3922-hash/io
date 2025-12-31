@@ -13,6 +13,7 @@
             --bg-deep: #0f0a1e;
             --brand-primary: #a855f7;
             --brand-secondary: #00f0ff;
+            --baemin-color: #2ac1bc;
         }
 
         body {
@@ -118,6 +119,27 @@
             background: rgba(168, 85, 247, 0.05);
             box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
         }
+
+        .baemin-banner {
+            background: linear-gradient(135deg, #2ac1bc 0%, #229a96 100%);
+            border-radius: 32px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .baemin-banner:hover {
+            transform: scale(1.01);
+            box-shadow: 0 20px 40px rgba(42, 193, 188, 0.3);
+        }
+        .baemin-pattern {
+            position: absolute;
+            right: -20px;
+            bottom: -20px;
+            font-size: 180px;
+            color: rgba(255, 255, 255, 0.1);
+            transform: rotate(-15deg);
+        }
     </style>
 </head>
 <body class="min-h-screen" oncontextmenu="return false">
@@ -199,9 +221,29 @@
         </div>
     </section>
 
+    <!-- Baemin Special Banner Section -->
+    <section class="max-w-7xl mx-auto px-6 mb-12">
+        <div onclick="openBaeminPayment()" class="baemin-banner p-8 md:p-12 flex flex-col md:flex-row items-center justify-between shadow-2xl">
+            <i class="fas fa-motorcycle baemin-pattern"></i>
+            <div class="relative z-10 text-center md:text-left mb-6 md:mb-0">
+                <div class="inline-block px-4 py-1.5 bg-white/20 backdrop-blur-md rounded-full text-[10px] font-black text-white uppercase tracking-widest mb-4">Special Event</div>
+                <h2 class="text-3xl md:text-5xl font-black text-white mb-2 italic">배달의민족 <span class="text-yellow-300">12%</span> 파격 할인</h2>
+                <p class="text-white/80 font-bold">지금 바로 포인트로 배민 기프트카드를 가장 저렴하게 만나보세요.</p>
+            </div>
+            <div class="relative z-10">
+                <button class="px-8 py-4 bg-white text-[#2ac1bc] rounded-2xl font-black text-lg shadow-xl hover:bg-yellow-300 hover:text-gray-900 transition-all">
+                    지금 혜택받기
+                </button>
+            </div>
+        </div>
+    </section>
+
     <!-- Gift Card Grid -->
     <section id="giftcards" class="max-w-7xl mx-auto px-6 py-20 scroll-mt-24">
-        <h2 class="text-4xl font-bold mb-16 tracking-tight">인기 기프트카드</h2>
+        <div class="flex items-center justify-between mb-16">
+            <h2 class="text-4xl font-bold tracking-tight">인기 기프트카드</h2>
+            <div class="h-1 flex-1 mx-8 bg-white/5 rounded-full hidden md:block"></div>
+        </div>
         <div id="giftcard-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
     </section>
 
@@ -210,13 +252,12 @@
         <p class="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em]">© 2025 RootooPay Cloud Sync. All Rights Reserved.</p>
     </footer>
 
-    <!-- 하단 알림 컨테이너 -->
+    <!-- 알림 컨테이너 -->
     <div id="bottom-toast-container" class="fixed bottom-6 right-6 z-[100] flex flex-col items-end space-y-3 pointer-events-none"></div>
 
     <!-- 결제 모달 -->
     <div id="payment-modal" class="modal-backdrop fixed inset-0 z-[200] items-center justify-center p-4" onclick="closePaymentModal()">
         <div class="modal-content w-full max-w-[840px] bg-[#140e29] border border-white/10 rounded-[40px] shadow-2xl overflow-hidden flex flex-col md:flex-row" onclick="event.stopPropagation()">
-            <!-- 요약 정보 -->
             <div class="w-full md:w-[320px] bg-gradient-to-b from-purple-900/40 to-[#140e29] p-8 md:p-10 border-b md:border-b-0 md:border-r border-white/5">
                 <div id="modal-item-icon-bg" class="w-16 h-16 rounded-3xl mb-8 flex items-center justify-center shadow-2xl">
                     <i id="modal-item-icon" class="text-3xl text-white"></i>
@@ -232,7 +273,6 @@
                 <p class="text-[10px] font-black text-purple-400 uppercase tracking-widest mb-1">Total Payment</p>
                 <p id="modal-final-price" class="text-3xl font-black text-white stat-font">0원</p>
             </div>
-            <!-- 입금 폼 -->
             <div class="flex-1 p-8 md:p-10 bg-[#1a142e] relative">
                 <button onclick="closePaymentModal()" class="absolute top-6 right-6 text-white/20 hover:text-white transition-colors"><i class="fas fa-times text-xl"></i></button>
                 <div class="mb-10">
@@ -266,9 +306,20 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, getDoc, serverTimestamp, updateDoc, increment, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { 
+            getFirestore, 
+            collection, 
+            addDoc, 
+            onSnapshot, 
+            doc, 
+            getDoc, 
+            serverTimestamp, 
+            updateDoc, 
+            increment, 
+            setDoc 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Firebase 초기 설정
+        // Global context
         const firebaseConfig = JSON.parse(__firebase_config);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'rootoo-pay-main';
         const app = initializeApp(firebaseConfig);
@@ -290,16 +341,18 @@
             setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 4000);
         }
 
-        // --- 인증 & 실시간 동기화 ---
+        // --- 인증 및 초기화 ---
         const initAuth = async () => {
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                await signInWithCustomToken(auth, __initial_auth_token);
-            } else {
-                await signInAnonymously(auth);
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (err) {
+                console.error("Auth Init Error:", err);
             }
         };
-
-        initAuth();
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -310,24 +363,31 @@
             }
         });
 
+        initAuth();
+
+        // --- 실시간 데이터 연동 (대시보드와 동일한 경로 사용) ---
         function startRealtimeSync() {
-            // FIX: 짝수 경로 준수 (6개 세그먼트: artifacts / appId / public / data / settings / docId)
+            if (!currentUser) return;
+
+            // 설정 및 전체 통계 (RULE 1 준수)
             const configRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main');
             onSnapshot(configRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    document.getElementById('dynamic-notice').innerText = data.topNotice || "루투페이 기프트카드 한정 이벤트!";
+                    document.getElementById('dynamic-notice').innerText = data.topNotice || "루투페이 실시간 클라우드 연동 중";
                     document.getElementById('main-sales-count').innerText = data.totalSales || "0";
                 }
             }, (err) => console.error("Settings Sync Error:", err));
 
+            // 실시간 피드 (최신순 10개)
             const feedRef = collection(db, 'artifacts', appId, 'public', 'data', 'liveFeed');
             onSnapshot(feedRef, (snapshot) => {
                 const container = document.getElementById('live-purchase-container');
                 container.innerHTML = '';
                 const items = [];
-                snapshot.forEach(doc => items.push(doc.data()));
+                snapshot.forEach(d => items.push(d.data()));
                 
+                // 시간순 정렬
                 items.sort((a, b) => (b.time?.seconds || 0) - (a.time?.seconds || 0));
                 
                 items.slice(0, 10).forEach(item => {
@@ -342,17 +402,17 @@
                     `;
                     container.appendChild(div);
                 });
-            }, (err) => console.error("Feed snapshot error:", err));
+            }, (err) => console.error("Feed Sync Error:", err));
         }
 
         // --- 상품 렌더링 ---
         const products = [
-            { name: '신세계 상품권', rate: 5, icon: 'fas fa-store', color: 'from-orange-400 to-red-500', price: '47,500' },
-            { name: '구글 기프트카드', rate: 10, icon: 'fab fa-google-play', color: 'from-blue-400 to-indigo-600', price: '45,000' },
-            { name: '배달의민족', rate: 12, icon: 'fas fa-motorcycle', color: 'from-cyan-400 to-blue-500', price: '44,000' },
-            { name: '올리브영 기프트', rate: 7, icon: 'fas fa-leaf', color: 'from-green-400 to-green-600', price: '46,500' },
-            { name: '스타벅스 쿠폰', rate: 8, icon: 'fas fa-coffee', color: 'from-green-800 to-emerald-900', price: '9,200' },
-            { name: '네이버페이', rate: 3, icon: 'fas fa-p', color: 'from-green-500 to-emerald-700', price: '48,500' }
+            { id: 'baemin', name: '배달의민족', rate: 12, icon: 'fas fa-motorcycle', color: 'from-[#2ac1bc] to-[#229a96]', price: '44,000' },
+            { id: 'ssg', name: '신세계 상품권', rate: 5, icon: 'fas fa-store', color: 'from-orange-400 to-red-500', price: '47,500' },
+            { id: 'google', name: '구글 기프트카드', rate: 10, icon: 'fab fa-google-play', color: 'from-blue-400 to-indigo-600', price: '45,000' },
+            { id: 'olive', name: '올리브영 기프트', rate: 7, icon: 'fas fa-leaf', color: 'from-green-400 to-green-600', price: '46,500' },
+            { id: 'starbucks', name: '스타벅스 쿠폰', rate: 8, icon: 'fas fa-coffee', color: 'from-green-800 to-emerald-900', price: '9,200' },
+            { id: 'naver', name: '네이버페이', rate: 3, icon: 'fas fa-p', color: 'from-green-500 to-emerald-700', price: '48,500' }
         ];
 
         const grid = document.getElementById('giftcard-grid');
@@ -371,7 +431,12 @@
             grid.appendChild(card);
         });
 
-        // --- 주문 처리 ---
+        // --- 결제 및 주문 처리 (대시보드 반영 핵심) ---
+        window.openBaeminPayment = () => {
+            const baemin = products.find(p => p.id === 'baemin');
+            openPayment(baemin);
+        };
+
         window.openPayment = (p) => {
             selectedProduct = p;
             document.getElementById('modal-item-name').innerText = p.name;
@@ -388,57 +453,60 @@
 
         document.getElementById('submit-payment').onclick = async () => {
             const btn = document.getElementById('submit-payment');
-            const name = document.getElementById('sender-name').value.trim();
+            const nameInput = document.getElementById('sender-name');
+            const name = nameInput.value.trim();
             
             if (!name) return showToast("오류", "입금자 성함을 입력해 주세요.");
-            if (!currentUser) return showToast("오류", "서버와 연결 중입니다.");
+            if (!currentUser) return showToast("오류", "인증 확인 중입니다. 다시 시도해 주세요.");
 
             try {
                 btn.disabled = true;
                 btn.innerText = "처리 중...";
 
-                // 1. 주문 저장
-                const orderRef = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
-                await addDoc(orderRef, {
+                // 1. 주문 생성 (RULE 1: /artifacts/{appId}/public/data/orders)
+                const ordersColl = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
+                await addDoc(ordersColl, {
                     customerName: name,
                     productName: selectedProduct.name,
                     price: selectedProduct.price,
                     status: '입금확인중',
-                    timestamp: serverTimestamp(),
+                    createdAt: serverTimestamp(), // 대시보드 정렬용
                     uid: currentUser.uid
                 });
 
-                // 2. 판매 수치 1 증가
+                // 2. 전체 통계 업데이트 (RULE 1: /artifacts/{appId}/public/data/settings/main)
                 const configRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main');
                 await updateDoc(configRef, {
                     totalSales: increment(1)
                 }).catch(async () => {
-                    await setDoc(configRef, { totalSales: 1 }, { merge: true });
+                    // 문서가 없는 경우 초기 생성
+                    await setDoc(configRef, { totalSales: 1, topNotice: "루투페이 서비스 오픈!" }, { merge: true });
                 });
 
-                // 3. 라이브 피드 데이터 추가
-                const feedRef = collection(db, 'artifacts', appId, 'public', 'data', 'liveFeed');
-                await addDoc(feedRef, {
-                    name: name.substring(0, 1) + "*" + (name.length > 2 ? name.substring(name.length-1) : (name.length > 1 ? name.substring(1) : "")),
+                // 3. 실시간 피드 업데이트
+                const feedColl = collection(db, 'artifacts', appId, 'public', 'data', 'liveFeed');
+                await addDoc(feedColl, {
+                    name: name.length > 2 ? name[0] + "*" + name[name.length-1] : name[0] + "*",
                     product: selectedProduct.name,
                     price: selectedProduct.price,
                     time: serverTimestamp()
                 });
 
+                // 성공 UI 전환
                 const modalContent = document.querySelector('.modal-content');
                 modalContent.innerHTML = `
                     <div class="w-full p-20 flex flex-col items-center text-center space-y-6 bg-[#1a142e]">
-                        <div class="w-20 h-20 bg-emerald-500 rounded-full flex items-center justify-center shadow-2xl animate-bounce">
+                        <div class="w-20 h-20 bg-emerald-500 rounded-full flex items-center justify-center shadow-[0_0_40px_rgba(16,185,129,0.3)] animate-bounce">
                             <i class="fas fa-check text-3xl text-white"></i>
                         </div>
                         <h3 class="text-3xl font-black text-white">입금 확인 요청 완료</h3>
-                        <p class="text-white/40 text-sm">확인이 완료되는 즉시 핀번호가 문자로 발송됩니다.</p>
+                        <p class="text-white/40 text-sm">대시보드에서 관리자가 확인 후<br>핀번호를 즉시 발송합니다.</p>
                         <button onclick="location.reload()" class="px-10 py-4 bg-purple-600 rounded-2xl font-bold hover:bg-purple-500 transition-all text-white">확인</button>
                     </div>
                 `;
             } catch (error) {
                 console.error("Payment Submission Error:", error);
-                showToast("오류", "요청 중 오류가 발생했습니다.");
+                showToast("오류", "데이터베이스 연결에 실패했습니다.");
                 btn.disabled = false;
                 btn.innerText = "입금 완료 요청하기";
             }
