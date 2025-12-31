@@ -1,4 +1,4 @@
-
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -13,8 +13,9 @@
         .stat-card { border-left: 4px solid #a855f7; }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
-        .input-dark { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; font-size: 14px; width: 100%; outline: none; transition: border-color 0.3s; }
+        .input-dark { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; font-size: 14px; width: 100%; outline: none; transition: border-color 0.3s; color: white; }
         .input-dark:focus { border-color: #a855f7; }
+        select.input-dark option { background: #1a1525; color: white; }
     </style>
 </head>
 <body class="min-h-screen pb-20">
@@ -62,7 +63,7 @@
                     </div>
                 </section>
 
-                <!-- Product Management (Deletion Feature Added) -->
+                <!-- Product Management -->
                 <section class="space-y-6">
                     <div class="flex items-center justify-between">
                         <h3 class="text-xl font-bold"><i class="fas fa-boxes mr-3 text-cyan-400"></i>등록된 상품 관리</h3>
@@ -75,32 +76,54 @@
 
             <!-- Right Column: Settings & Controls -->
             <div class="space-y-10">
-                <!-- Banner Control (New!) -->
-                <section class="glass p-8 rounded-[32px] space-y-6">
-                    <h3 class="text-lg font-bold border-b border-white/5 pb-4"><i class="fas fa-ad mr-2 text-cyan-400"></i>메인 배너 설정</h3>
+                <!-- 3rd Section Banner Control (Updated) -->
+                <section class="glass p-8 rounded-[32px] space-y-6 border-t-4 border-cyan-500">
+                    <h3 class="text-lg font-bold border-b border-white/5 pb-4"><i class="fas fa-ad mr-2 text-cyan-400"></i>3번째 리미티드 배너 설정</h3>
                     <div class="space-y-4">
                         <div>
-                            <label class="text-[10px] text-white/40 font-bold uppercase">배너 제목</label>
+                            <label class="text-[10px] text-white/40 font-bold uppercase">배너 배경 색상</label>
+                            <select id="banner-bg" class="input-dark mt-1">
+                                <option value="linear-gradient(135deg, #2ac1bc 0%, #229a96 100%)">배민 민트 (기본)</option>
+                                <option value="linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)">스카이 블루</option>
+                                <option value="linear-gradient(135deg, #a855f7 0%, #6366f1 100%)">퍼플 인디고</option>
+                                <option value="linear-gradient(135deg, #f59e0b 0%, #d97706 100%)">앰버 오렌지</option>
+                                <option value="linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)">로즈 레드</option>
+                                <option value="linear-gradient(135deg, #1f2937 0%, #111827 100%)">다크 그레이</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-white/40 font-bold uppercase">배너 큰 제목</label>
                             <input type="text" id="banner-title" placeholder="예: 배달의민족" class="input-dark mt-1">
                         </div>
                         <div>
-                            <label class="text-[10px] text-white/40 font-bold uppercase">할인율 (%)</label>
+                            <label class="text-[10px] text-white/40 font-bold uppercase">할인율 강조 (텍스트)</label>
                             <input type="text" id="banner-rate" placeholder="예: 12%" class="input-dark mt-1">
                         </div>
                         <div>
-                            <label class="text-[10px] text-white/40 font-bold uppercase">상세 설명</label>
-                            <input type="text" id="banner-desc" placeholder="배너 하단 설명 문구" class="input-dark mt-1">
+                            <label class="text-[10px] text-white/40 font-bold uppercase">하단 상세 설명</label>
+                            <input type="text" id="banner-desc" placeholder="예: 배민 상품권 즉시 할인 진행 중" class="input-dark mt-1">
                         </div>
-                        <button onclick="updateBannerSettings()" class="w-full py-4 bg-cyan-600 rounded-2xl font-bold text-sm hover:bg-cyan-500 transition-all">배너 즉시 업데이트</button>
+                        <div>
+                            <label class="text-[10px] text-white/40 font-bold uppercase">버튼 이름</label>
+                            <input type="text" id="banner-btn-text" placeholder="예: 혜택 받기" class="input-dark mt-1">
+                        </div>
+                        <button onclick="updateBannerSettings()" class="w-full py-4 bg-cyan-600 rounded-2xl font-bold text-sm hover:bg-cyan-500 transition-all active:scale-95 shadow-lg shadow-cyan-900/20">리미티드 배너 즉시 반영</button>
                     </div>
                 </section>
 
                 <!-- Top Notice Control -->
                 <section class="glass p-8 rounded-[32px] space-y-6">
-                    <h3 class="text-lg font-bold border-b border-white/5 pb-4"><i class="fas fa-bullhorn mr-2 text-purple-500"></i>상단 공지 설정</h3>
+                    <h3 class="text-lg font-bold border-b border-white/5 pb-4"><i class="fas fa-bullhorn mr-2 text-purple-500"></i>상단 공지 & 판매량 설정</h3>
                     <div class="space-y-4">
-                        <input type="text" id="input-top-notice" placeholder="상단 공지 텍스트" class="input-dark">
-                        <button onclick="updateSettings()" class="w-full py-4 bg-purple-600 rounded-2xl font-bold text-sm hover:bg-purple-500 transition-all">공지사항 즉시 적용</button>
+                        <div>
+                            <label class="text-[10px] text-white/40 font-bold uppercase">공지 내용</label>
+                            <input type="text" id="input-top-notice" placeholder="상단 공지 텍스트" class="input-dark mt-1">
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-white/40 font-bold uppercase">가상 판매량 설정</label>
+                            <input type="number" id="input-total-sales" placeholder="총 판매량 수치" class="input-dark mt-1">
+                        </div>
+                        <button onclick="updateSettings()" class="w-full py-4 bg-purple-600 rounded-2xl font-bold text-sm hover:bg-purple-500 transition-all">설정 정보 즉시 적용</button>
                     </div>
                 </section>
 
@@ -128,7 +151,7 @@
     <!-- Scripts -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { 
             getFirestore, collection, addDoc, onSnapshot, doc, 
             setDoc, updateDoc, deleteDoc, query, orderBy, serverTimestamp 
@@ -170,11 +193,11 @@
                     return;
                 }
                 const orders = [];
-                snapshot.forEach(doc => orders.push({id: doc.id, ...doc.data()}));
+                snapshot.forEach(docSnap => orders.push({id: docSnap.id, ...docSnap.data()}));
                 orders.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
                 orders.forEach(order => {
                     const div = document.createElement('div');
-                    div.className = "glass p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center";
+                    div.className = "glass p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center border-l-2 border-purple-500/30";
                     div.innerHTML = `
                         <div class="flex items-center space-x-4">
                             <div class="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-400"><i class="fas fa-wallet"></i></div>
@@ -183,7 +206,7 @@
                                 <p class="font-bold text-white">${order.customerName} <span class="text-purple-400">/ ${order.productName}</span></p>
                             </div>
                         </div>
-                        <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-4 mt-4 md:mt-0">
                             <span class="font-black text-sm">${Number(order.price).toLocaleString()}원</span>
                             <button onclick="deleteOrder('${order.id}')" class="p-2 text-white/20 hover:text-red-500 transition-colors"><i class="fas fa-trash"></i></button>
                         </div>
@@ -215,37 +238,51 @@
                 });
             });
 
-            // 3. 설정 (판매량 & 배너 & 공지)
+            // 3. 설정 동기화
             const settingsRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main');
             onSnapshot(settingsRef, (snap) => {
                 if(snap.exists()) {
                     const d = snap.data();
                     document.getElementById('stat-total-sales').innerText = d.totalSales || 0;
+                    document.getElementById('input-total-sales').value = d.totalSales || 0;
                     document.getElementById('input-top-notice').value = d.topNotice || "";
+                    
+                    // 배너 필드 업데이트
                     document.getElementById('banner-title').value = d.bannerTitle || "배달의민족";
                     document.getElementById('banner-rate').value = d.bannerRate || "12%";
                     document.getElementById('banner-desc').value = d.bannerDesc || "";
+                    document.getElementById('banner-btn-text').value = d.bannerBtnText || "혜택 받기";
+                    if(d.bannerBg) document.getElementById('banner-bg').value = d.bannerBg;
                 }
             });
         }
 
-            // --- 액션 함수들 ---
+        // --- 액션 함수들 ---
         window.updateSettings = async () => {
-            const val = document.getElementById('input-top-notice').value;
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main'), { topNotice: val }, { merge: true });
-            alert('공지가 업데이트되었습니다.');
+            const topNotice = document.getElementById('input-top-notice').value;
+            const totalSales = parseInt(document.getElementById('input-total-sales').value) || 0;
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main'), { 
+                topNotice, 
+                totalSales 
+            }, { merge: true });
+            alert('기본 설정이 업데이트되었습니다.');
         };
 
         window.updateBannerSettings = async () => {
             const title = document.getElementById('banner-title').value;
             const rate = document.getElementById('banner-rate').value;
             const desc = document.getElementById('banner-desc').value;
+            const btnText = document.getElementById('banner-btn-text').value;
+            const bg = document.getElementById('banner-bg').value;
+            
             await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main'), {
                 bannerTitle: title,
                 bannerRate: rate,
-                bannerDesc: desc
+                bannerDesc: desc,
+                bannerBtnText: btnText,
+                bannerBg: bg
             }, { merge: true });
-            alert('배너 설정이 저장되었습니다.');
+            alert('3번째 섹션 배너 설정이 저장되었습니다.');
         };
 
         window.addProduct = async () => {
@@ -260,6 +297,7 @@
             alert('상품 등록 완료!');
             document.getElementById('p-name').value = '';
             document.getElementById('p-price').value = '';
+            document.getElementById('p-rate').value = '';
         };
 
         window.deleteProduct = async (id) => {
