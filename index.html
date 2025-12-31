@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>루투페이 - 실시간 클라우드 연동</title>
+    <title>지캐시 ZCash - 국민드기프트카드 저장소</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -24,8 +24,6 @@
             word-break: keep-all;
             scroll-behavior: smooth;
             -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
             user-select: none;
         }
 
@@ -128,10 +126,6 @@
             cursor: pointer;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        .baemin-banner:hover {
-            transform: scale(1.01);
-            box-shadow: 0 20px 40px rgba(42, 193, 188, 0.3);
-        }
         .baemin-pattern {
             position: absolute;
             right: -20px;
@@ -161,7 +155,7 @@
                         <i class="fas fa-gift text-white text-[10px]"></i>
                     </div>
                     <div class="overflow-hidden">
-                        <p id="dynamic-notice" class="text-[11px] font-bold text-white truncate">로딩 중...</p>
+                        <p id="dynamic-notice" class="text-[11px] font-bold text-white truncate">연결 중...</p>
                         <a href="#giftcards" class="text-[9px] font-black text-cyan-300 hover:text-white transition-colors">지금 쇼핑하기</a>
                     </div>
                 </div>
@@ -182,16 +176,16 @@
     <!-- Hero Section -->
     <section class="relative pt-20 pb-32 px-6">
         <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div class="space-y-8 relative z-10">
-                <div class="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20">
+            <div class="space-y-8 relative z-10 text-center lg:text-left">
+                <div class="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 mx-auto lg:mx-0">
                     <span class="flex h-2 w-2 rounded-full bg-purple-500 animate-pulse"></span>
                     <span class="text-[10px] font-black uppercase tracking-widest text-purple-400">Premium Real-time Service</span>
                 </div>
                 <h1 class="hero-title text-5xl md:text-7xl">포인트로<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">기프트카드</span><br>즉시 교환.</h1>
-                <p class="text-lg text-white/50 max-w-md font-medium leading-relaxed">
+                <p class="text-lg text-white/50 max-w-md font-medium leading-relaxed mx-auto lg:mx-0">
                     실시간 클라우드 시스템으로 연동되어 모든 주문과 결제가 안전하고 빠르게 처리됩니다.
                 </p>
-                <div class="flex flex-col sm:flex-row gap-4 pt-4">
+                <div class="flex flex-col sm:flex-row gap-4 pt-4 justify-center lg:justify-start">
                     <button onclick="document.getElementById('giftcards').scrollIntoView({behavior: 'smooth'})" class="px-10 py-5 bg-purple-600 rounded-2xl font-black text-lg shadow-[0_15px_30px_rgba(168,85,247,0.3)] hover:scale-105 active:scale-95 transition-all">
                         쇼핑 시작하기
                     </button>
@@ -221,13 +215,13 @@
         </div>
     </section>
 
-    <!-- Baemin Special Banner Section -->
+    <!-- Baemin Special Banner -->
     <section class="max-w-7xl mx-auto px-6 mb-12">
-        <div onclick="openBaeminPayment()" class="baemin-banner p-8 md:p-12 flex flex-col md:flex-row items-center justify-between shadow-2xl">
+        <div id="baemin-banner-trigger" class="baemin-banner p-8 md:p-12 flex flex-col md:flex-row items-center justify-between shadow-2xl">
             <i class="fas fa-motorcycle baemin-pattern"></i>
             <div class="relative z-10 text-center md:text-left mb-6 md:mb-0">
                 <div class="inline-block px-4 py-1.5 bg-white/20 backdrop-blur-md rounded-full text-[10px] font-black text-white uppercase tracking-widest mb-4">Special Event</div>
-                <h2 class="text-3xl md:text-5xl font-black text-white mb-2 italic">배달의민족 <span class="text-yellow-300">12%</span> 파격 할인</h2>
+                <h2 class="text-3xl md:text-5xl font-black text-white mb-2 italic">배달의민족 <span id="baemin-rate-text" class="text-yellow-300">12%</span> 파격 할인</h2>
                 <p class="text-white/80 font-bold">지금 바로 포인트로 배민 기프트카드를 가장 저렴하게 만나보세요.</p>
             </div>
             <div class="relative z-10">
@@ -244,7 +238,10 @@
             <h2 class="text-4xl font-bold tracking-tight">인기 기프트카드</h2>
             <div class="h-1 flex-1 mx-8 bg-white/5 rounded-full hidden md:block"></div>
         </div>
-        <div id="giftcard-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+        <div id="giftcard-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Items loaded from Firestore -->
+            <div class="col-span-full py-20 text-center text-white/20">상품 데이터를 불러오는 중입니다...</div>
+        </div>
     </section>
 
     <!-- Footer -->
@@ -252,10 +249,10 @@
         <p class="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em]">© 2025 RootooPay Cloud Sync. All Rights Reserved.</p>
     </footer>
 
-    <!-- 알림 컨테이너 -->
+    <!-- Toast Notification -->
     <div id="bottom-toast-container" class="fixed bottom-6 right-6 z-[100] flex flex-col items-end space-y-3 pointer-events-none"></div>
 
-    <!-- 결제 모달 -->
+    <!-- Payment Modal -->
     <div id="payment-modal" class="modal-backdrop fixed inset-0 z-[200] items-center justify-center p-4" onclick="closePaymentModal()">
         <div class="modal-content w-full max-w-[840px] bg-[#140e29] border border-white/10 rounded-[40px] shadow-2xl overflow-hidden flex flex-col md:flex-row" onclick="event.stopPropagation()">
             <div class="w-full md:w-[320px] bg-gradient-to-b from-purple-900/40 to-[#140e29] p-8 md:p-10 border-b md:border-b-0 md:border-r border-white/5">
@@ -302,61 +299,50 @@
         </div>
     </div>
 
-    <!-- Firebase SDK & Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { 
-            getFirestore, 
-            collection, 
-            addDoc, 
-            onSnapshot, 
-            doc, 
-            getDoc, 
-            serverTimestamp, 
-            updateDoc, 
-            increment, 
-            setDoc 
+            getFirestore, collection, addDoc, onSnapshot, doc, getDoc, 
+            serverTimestamp, updateDoc, increment, setDoc 
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Global context
+        // CONFIG
         const firebaseConfig = JSON.parse(__firebase_config);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'rootoo-pay-main';
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        let currentUser = null;
+        let user = null;
         let selectedProduct = null;
+        let cloudProducts = [];
 
-        // --- 공통 유틸리티 ---
+        // UI UTILS
         function showToast(title, desc) {
+            const container = document.getElementById('bottom-toast-container');
             const toast = document.createElement('div');
             toast.className = "toast-notification flex items-center space-x-4 p-4 bg-[#1a142e]/90 backdrop-blur-md border border-purple-500/30 rounded-2xl shadow-2xl pointer-events-auto min-w-[240px]";
             toast.innerHTML = `
                 <div class="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center flex-shrink-0"><i class="fas fa-bell text-white text-xs"></i></div>
                 <div><p class="text-[11px] font-bold text-white">${title}</p><p class="text-[10px] text-white/50">${desc}</p></div>
             `;
-            document.getElementById('bottom-toast-container').appendChild(toast);
+            container.appendChild(toast);
             setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 4000);
         }
 
-        // --- 인증 및 초기화 ---
+        // AUTH & SYNC
         const initAuth = async () => {
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (err) {
-                console.error("Auth Init Error:", err);
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+                await signInAnonymously(auth);
             }
         };
 
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, (u) => {
+            user = u;
             if (user) {
-                currentUser = user;
                 document.getElementById('sync-dot').className = "w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse";
                 document.getElementById('sync-text').innerText = "Cloud Active";
                 startRealtimeSync();
@@ -365,29 +351,61 @@
 
         initAuth();
 
-        // --- 실시간 데이터 연동 (대시보드와 동일한 경로 사용) ---
         function startRealtimeSync() {
-            if (!currentUser) return;
-
-            // 설정 및 전체 통계 (RULE 1 준수)
-            const configRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main');
-            onSnapshot(configRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
+            // 1. Settings (Notice, Sales)
+            const settingsRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main');
+            onSnapshot(settingsRef, (snap) => {
+                if (snap.exists()) {
+                    const data = snap.data();
                     document.getElementById('dynamic-notice').innerText = data.topNotice || "루투페이 실시간 클라우드 연동 중";
                     document.getElementById('main-sales-count').innerText = data.totalSales || "0";
                 }
-            }, (err) => console.error("Settings Sync Error:", err));
+            });
 
-            // 실시간 피드 (최신순 10개)
+            // 2. Gift Card Products (대시보드와 직접 연동되는 핵심 로직)
+            const itemsRef = collection(db, 'artifacts', appId, 'public', 'data', 'products');
+            onSnapshot(itemsRef, (snapshot) => {
+                const grid = document.getElementById('giftcard-grid');
+                grid.innerHTML = '';
+                cloudProducts = [];
+
+                if (snapshot.empty) {
+                    grid.innerHTML = '<div class="col-span-full py-20 text-center text-white/20">등록된 상품이 없습니다. 대시보드에서 추가해 주세요.</div>';
+                    return;
+                }
+
+                snapshot.forEach(docSnap => {
+                    const p = { id: docSnap.id, ...docSnap.data() };
+                    cloudProducts.push(p);
+
+                    // 배달의민족 정보는 배너에도 연동
+                    if (p.id === 'baemin') {
+                        document.getElementById('baemin-rate-text').innerText = `${p.rate}%`;
+                        document.getElementById('baemin-banner-trigger').onclick = () => openPayment(p);
+                    }
+
+                    const card = document.createElement('div');
+                    card.className = "exchange-card p-8 flex flex-col items-center text-center relative overflow-hidden group cursor-pointer";
+                    card.innerHTML = `
+                        <div class="w-20 h-20 bg-gradient-to-br ${p.color || 'from-purple-500 to-indigo-600'} rounded-3xl mb-8 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                            <i class="${p.icon || 'fas fa-gift'} text-3xl text-white"></i>
+                        </div>
+                        <h3 class="text-2xl font-black mb-2 text-white">${p.name}</h3>
+                        <p class="text-xl font-black text-purple-400 stat-font mb-8">${p.rate}% 할인</p>
+                        <button class="w-full py-4 bg-white/5 border border-white/10 rounded-2xl font-bold hover:bg-white hover:text-gray-900 transition-all">구매하기</button>
+                    `;
+                    card.onclick = () => openPayment(p);
+                    grid.appendChild(card);
+                });
+            });
+
+            // 3. Live Feed (실시간 구매 알림)
             const feedRef = collection(db, 'artifacts', appId, 'public', 'data', 'liveFeed');
             onSnapshot(feedRef, (snapshot) => {
                 const container = document.getElementById('live-purchase-container');
                 container.innerHTML = '';
                 const items = [];
                 snapshot.forEach(d => items.push(d.data()));
-                
-                // 시간순 정렬
                 items.sort((a, b) => (b.time?.seconds || 0) - (a.time?.seconds || 0));
                 
                 items.slice(0, 10).forEach(item => {
@@ -398,52 +416,21 @@
                             <div class="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center"><i class="fas fa-ticket-alt text-[10px] text-purple-400"></i></div>
                             <div><p class="text-[11px] font-bold text-white">${item.name}</p><p class="text-[9px] text-white/40">${item.product}</p></div>
                         </div>
-                        <div class="text-right"><p class="text-[10px] font-black text-cyan-400">${item.price}</p><p class="text-[8px] text-white/20 uppercase tracking-tighter">SUCCESS</p></div>
+                        <div class="text-right"><p class="text-[10px] font-black text-cyan-400">${item.price}원</p><p class="text-[8px] text-white/20 uppercase tracking-tighter">SUCCESS</p></div>
                     `;
                     container.appendChild(div);
                 });
-            }, (err) => console.error("Feed Sync Error:", err));
+            });
         }
 
-        // --- 상품 렌더링 ---
-        const products = [
-            { id: 'baemin', name: '배달의민족', rate: 12, icon: 'fas fa-motorcycle', color: 'from-[#2ac1bc] to-[#229a96]', price: '44,000' },
-            { id: 'ssg', name: '신세계 상품권', rate: 5, icon: 'fas fa-store', color: 'from-orange-400 to-red-500', price: '47,500' },
-            { id: 'google', name: '구글 기프트카드', rate: 10, icon: 'fab fa-google-play', color: 'from-blue-400 to-indigo-600', price: '45,000' },
-            { id: 'olive', name: '올리브영 기프트', rate: 7, icon: 'fas fa-leaf', color: 'from-green-400 to-green-600', price: '46,500' },
-            { id: 'starbucks', name: '스타벅스 쿠폰', rate: 8, icon: 'fas fa-coffee', color: 'from-green-800 to-emerald-900', price: '9,200' },
-            { id: 'naver', name: '네이버페이', rate: 3, icon: 'fas fa-p', color: 'from-green-500 to-emerald-700', price: '48,500' }
-        ];
-
-        const grid = document.getElementById('giftcard-grid');
-        products.forEach(p => {
-            const card = document.createElement('div');
-            card.className = "exchange-card p-8 flex flex-col items-center text-center relative overflow-hidden group cursor-pointer";
-            card.innerHTML = `
-                <div class="w-20 h-20 bg-gradient-to-br ${p.color} rounded-3xl mb-8 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                    <i class="${p.icon} text-3xl text-white"></i>
-                </div>
-                <h3 class="text-2xl font-black mb-2 text-white">${p.name}</h3>
-                <p class="text-xl font-black text-purple-400 stat-font mb-8">${p.rate}% 할인</p>
-                <button class="w-full py-4 bg-white/5 border border-white/10 rounded-2xl font-bold hover:bg-white hover:text-gray-900 transition-all">구매하기</button>
-            `;
-            card.onclick = () => openPayment(p);
-            grid.appendChild(card);
-        });
-
-        // --- 결제 및 주문 처리 (대시보드 반영 핵심) ---
-        window.openBaeminPayment = () => {
-            const baemin = products.find(p => p.id === 'baemin');
-            openPayment(baemin);
-        };
-
+        // PAYMENT LOGIC
         window.openPayment = (p) => {
             selectedProduct = p;
             document.getElementById('modal-item-name').innerText = p.name;
             document.getElementById('modal-item-price').innerText = p.price + '원';
             document.getElementById('modal-final-price').innerText = p.price + '원';
-            document.getElementById('modal-item-icon').className = `${p.icon} text-3xl text-white`;
-            document.getElementById('modal-item-icon-bg').className = `w-16 h-16 rounded-3xl mb-8 flex items-center justify-center shadow-2xl bg-gradient-to-br ${p.color}`;
+            document.getElementById('modal-item-icon').className = `${p.icon || 'fas fa-gift'} text-3xl text-white`;
+            document.getElementById('modal-item-icon-bg').className = `w-16 h-16 rounded-3xl mb-8 flex items-center justify-center shadow-2xl bg-gradient-to-br ${p.color || 'from-purple-500 to-indigo-600'}`;
             document.getElementById('payment-modal').style.display = 'flex';
         };
 
@@ -452,61 +439,53 @@
         };
 
         document.getElementById('submit-payment').onclick = async () => {
-            const btn = document.getElementById('submit-payment');
             const nameInput = document.getElementById('sender-name');
             const name = nameInput.value.trim();
-            
+            const btn = document.getElementById('submit-payment');
+
             if (!name) return showToast("오류", "입금자 성함을 입력해 주세요.");
-            if (!currentUser) return showToast("오류", "인증 확인 중입니다. 다시 시도해 주세요.");
+            if (!user) return showToast("오류", "연결 상태가 불안정합니다.");
 
             try {
                 btn.disabled = true;
                 btn.innerText = "처리 중...";
 
-                // 1. 주문 생성 (RULE 1: /artifacts/{appId}/public/data/orders)
-                const ordersColl = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
-                await addDoc(ordersColl, {
+                // 1. 주문 데이터 기록 (대시보드 '입금 고객 관리' 탭으로 전송)
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'orders'), {
                     customerName: name,
                     productName: selectedProduct.name,
                     price: selectedProduct.price,
                     status: '입금확인중',
-                    createdAt: serverTimestamp(), // 대시보드 정렬용
-                    uid: currentUser.uid
+                    createdAt: serverTimestamp(),
+                    uid: user.uid
                 });
 
-                // 2. 전체 통계 업데이트 (RULE 1: /artifacts/{appId}/public/data/settings/main)
-                const configRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main');
-                await updateDoc(configRef, {
-                    totalSales: increment(1)
-                }).catch(async () => {
-                    // 문서가 없는 경우 초기 생성
-                    await setDoc(configRef, { totalSales: 1, topNotice: "루투페이 서비스 오픈!" }, { merge: true });
-                });
+                // 2. 대시보드 판매량 카운트 증가
+                const settingsRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main');
+                await updateDoc(settingsRef, { totalSales: increment(1) });
 
-                // 3. 실시간 피드 업데이트
-                const feedColl = collection(db, 'artifacts', appId, 'public', 'data', 'liveFeed');
-                await addDoc(feedColl, {
+                // 3. 실시간 피드에 즉시 반영
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'liveFeed'), {
                     name: name.length > 2 ? name[0] + "*" + name[name.length-1] : name[0] + "*",
                     product: selectedProduct.name,
                     price: selectedProduct.price,
                     time: serverTimestamp()
                 });
 
-                // 성공 UI 전환
-                const modalContent = document.querySelector('.modal-content');
-                modalContent.innerHTML = `
+                // Success View
+                document.querySelector('.modal-content').innerHTML = `
                     <div class="w-full p-20 flex flex-col items-center text-center space-y-6 bg-[#1a142e]">
                         <div class="w-20 h-20 bg-emerald-500 rounded-full flex items-center justify-center shadow-[0_0_40px_rgba(16,185,129,0.3)] animate-bounce">
                             <i class="fas fa-check text-3xl text-white"></i>
                         </div>
-                        <h3 class="text-3xl font-black text-white">입금 확인 요청 완료</h3>
-                        <p class="text-white/40 text-sm">대시보드에서 관리자가 확인 후<br>핀번호를 즉시 발송합니다.</p>
+                        <h3 class="text-3xl font-black text-white">확인 요청 완료</h3>
+                        <p class="text-white/40 text-sm">입금이 확인되면 즉시 문자로<br>기프트카드를 발송해 드립니다.</p>
                         <button onclick="location.reload()" class="px-10 py-4 bg-purple-600 rounded-2xl font-bold hover:bg-purple-500 transition-all text-white">확인</button>
                     </div>
                 `;
-            } catch (error) {
-                console.error("Payment Submission Error:", error);
-                showToast("오류", "데이터베이스 연결에 실패했습니다.");
+            } catch (err) {
+                console.error(err);
+                showToast("오류", "전송에 실패했습니다. 다시 시도해 주세요.");
                 btn.disabled = false;
                 btn.innerText = "입금 완료 요청하기";
             }
