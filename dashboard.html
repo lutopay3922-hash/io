@@ -1,358 +1,272 @@
-import React, { useState, useEffect } from 'react';
-import { initializeApp } from 'firebase/app';
-import { 
-  getFirestore, 
-  collection, 
-  doc, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
-  onSnapshot, 
-  getDoc,
-  setDoc
-} from 'firebase/firestore';
-import { 
-  getAuth, 
-  signInAnonymously, 
-  signInWithCustomToken, 
-  onAuthStateChanged 
-} from 'firebase/auth';
-import { 
-  Bell, 
-  Plus, 
-  Trash2, 
-  Edit3, 
-  ShoppingBag, 
-  CheckCircle, 
-  Clock, 
-  X,
-  CreditCard,
-  LayoutDashboard,
-  Tag,
-  Megaphone,
-  Save
-} from 'lucide-react';
 
-// Firebase configuration using environment variables
-const firebaseConfig = JSON.parse(__firebase_config);
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-// 중요: index.html과 동일한 appId를 사용해야 데이터가 공유됩니다.
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'giftcard-system-001';
-
-const App = () => {
-  const [user, setUser] = useState(null);
-  const [view, setView] = useState('dashboard'); // 'dashboard' | 'inventory' | 'orders'
-  const [giftCards, setGiftCards] = useState([]);
-  const [orders, setOrders] = useState([]);
-  const [notifications, setNotifications] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isNoticeModalOpen, setIsNoticeModalOpen] = useState(false);
-  const [editingCard, setEditingCard] = useState(null);
-  const [mainNotice, setMainNotice] = useState("환영합니다! 정직하고 빠른 기프트카드 거래소입니다.");
-
-  // Auth Initialization
-  useEffect(() => {
-    const initAuth = async () => {
-      if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-        await signInWithCustomToken(auth, __initial_auth_token);
-      } else {
-        await signInAnonymously(auth);
-      }
-    };
-    initAuth();
-    const unsubscribe = onAuthStateChanged(auth, setUser);
-    return () => unsubscribe();
-  }, []);
-
-  // Real-time Data Sync (Gift Cards)
-  useEffect(() => {
-    if (!user) return;
-    const cardsRef = collection(db, 'artifacts', appId, 'public', 'data', 'giftcards');
-    const unsubscribe = onSnapshot(cardsRef, (snapshot) => {
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setGiftCards(data);
-    }, (err) => console.error("Firestore Error:", err));
-    return () => unsubscribe();
-  }, [user]);
-
-  // Real-time Data Sync (Orders)
-  useEffect(() => {
-    if (!user) return;
-    const ordersRef = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
-    const unsubscribe = onSnapshot(ordersRef, (snapshot) => {
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setOrders(data.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)));
-      const pending = data.filter(o => o.status === 'PENDING');
-      setNotifications(pending);
-    }, (err) => console.error("Firestore Error:", err));
-    return () => unsubscribe();
-  }, [user]);
-
-  // Real-time Data Sync (Notice Settings)
-  useEffect(() => {
-    if (!user) return;
-    const noticeRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'notice');
-    const unsubscribe = onSnapshot(noticeRef, (docSnap) => {
-      if (docSnap.exists()) {
-        setMainNotice(docSnap.data().text);
-      }
-    });
-    return () => unsubscribe();
-  }, [user]);
-
-  // Update Notice Function
-  const handleUpdateNotice = async (e) => {
-    e.preventDefault();
-    const newText = new FormData(e.target).get('noticeText');
-    try {
-      await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'notice'), {
-        text: newText,
-        updatedAt: Date.now()
-      });
-      setIsNoticeModalOpen(false);
-    } catch (err) {
-      console.error("Notice Update Error:", err);
-    }
-  };
-
-  // Handle Card Add/Update
-  const handleSaveCard = async (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const cardData = {
-      name: formData.get('name'),
-      price: Number(formData.get('price')),
-      category: formData.get('category'),
-      updatedAt: Date.now()
-    };
-
-    try {
-      if (editingCard) {
-        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'giftcards', editingCard.id), cardData);
-      } else {
-        cardData.createdAt = Date.now();
-        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'giftcards'), cardData);
-      }
-      setIsModalOpen(false);
-      setEditingCard(null);
-    } catch (err) {
-      console.error("Save Error:", err);
-    }
-  };
-
-  const handleDeleteCard = async (id) => {
-    if (!window.confirm('정말 삭제하시겠습니까?')) return;
-    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'giftcards', id));
-  };
-
-  const updateOrderStatus = async (orderId, status) => {
-    try {
-      await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', orderId), {
-        status: status,
-        processedAt: Date.now()
-      });
-    } catch (err) {
-      console.error("Status Update Error:", err);
-    }
-  };
-
-  // Mock Purchase 기능 (관리자 페이지 내부 테스트용)
-  const placeOrder = async (card) => {
-    const newOrder = {
-      cardName: card.name,
-      cardId: card.id,
-      price: card.price,
-      customerName: "홍길동(테스트)",
-      status: 'PENDING',
-      createdAt: Date.now()
-    };
-    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'orders'), newOrder);
-  };
-
-  return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
-      <header className="bg-white border-b sticky top-0 z-40 px-6 py-4 flex justify-between items-center">
-        <div className="flex items-center gap-2 font-bold text-xl text-indigo-600">
-          <CreditCard className="w-8 h-8" />
-          <span>GIFT-ADMIN</span>
-        </div>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>루투CMS - 실시간 통합 관리 시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
         
-        <div className="flex items-center gap-4">
-          <button 
-            onClick={() => setIsNoticeModalOpen(true)}
-            className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-orange-600 bg-orange-50 rounded-full hover:bg-orange-100 transition-colors"
-          >
-            <Megaphone size={14} /> 상단 공지 설정
-          </button>
+        :root {
+            --bg-deep: #0f0a1e;
+            --sidebar-bg: #160f29;
+            --brand-primary: #a855f7;
+        }
 
-          <div className="relative group ml-2">
-            <Bell className="w-6 h-6 text-slate-400 cursor-pointer hover:text-indigo-600 transition-colors" />
-            {notifications.length > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center animate-pulse">
-                {notifications.length}
-              </span>
-            )}
-            <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-xl border p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
-              <h3 className="font-bold border-b pb-2 mb-2">미처리 주문 알림</h3>
-              <div className="max-h-60 overflow-y-auto text-xs">
-                {notifications.length === 0 ? "새로운 주문이 없습니다." : notifications.map(n => (
-                  <div key={n.id} className="p-2 border-b last:border-0">{n.customerName}: {n.cardName} 대기</div>
-                ))}
-              </div>
+        body { 
+            font-family: 'Noto Sans KR', sans-serif; 
+            background-color: var(--bg-deep); 
+            color: #f5f3ff;
+            overflow: hidden;
+        }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        .input-field { 
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            width: 100%;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(to right, rgba(168, 85, 247, 0.2), transparent);
+            color: white;
+            border-left: 4px solid var(--brand-primary);
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .animate-slide { animation: slideIn 0.3s ease-out forwards; }
+    </style>
+</head>
+<body class="min-h-screen flex">
+
+    <!-- Sidebar -->
+    <aside class="w-72 bg-[#160f29] border-r border-white/5 flex-shrink-0 flex flex-col">
+        <div class="p-8">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center">
+                    <i class="fas fa-shield-alt text-white"></i>
+                </div>
+                <span class="text-xl font-black italic tracking-tighter">루투<span class="text-purple-500">CMS</span></span>
             </div>
-          </div>
         </div>
-      </header>
 
-      <div className="flex h-[calc(100vh-73px)]">
-        <nav className="w-64 bg-white border-r p-6 hidden md:block">
-          <div className="space-y-2">
-            <button onClick={() => setView('dashboard')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${view === 'dashboard' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-500 hover:bg-slate-50'}`}>
-              <LayoutDashboard size={18} /> 대시보드
+        <nav class="flex-1 px-4 space-y-1">
+            <button onclick="switchTab('home')" class="nav-btn active w-full flex items-center space-x-3 px-6 py-4 rounded-xl text-white/50 hover:text-white" data-tab="home">
+                <i class="fas fa-th-large w-5"></i><span class="font-bold text-sm">홈 설정 제어</span>
             </button>
-            <button onClick={() => setView('inventory')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${view === 'inventory' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-500 hover:bg-slate-50'}`}>
-              <ShoppingBag size={18} /> 기프트카드 관리
+            <button onclick="switchTab('orders')" class="nav-btn w-full flex items-center space-x-3 px-6 py-4 rounded-xl text-white/50 hover:text-white" data-tab="orders">
+                <i class="fas fa-wallet w-5"></i><span class="font-bold text-sm">입금 고객 관리</span>
             </button>
-            <button onClick={() => setView('orders')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${view === 'orders' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-500 hover:bg-slate-50'}`}>
-              <Clock size={18} /> 주문 현황
+            <button onclick="switchTab('live')" class="nav-btn w-full flex items-center space-x-3 px-6 py-4 rounded-xl text-white/50 hover:text-white" data-tab="live">
+                <i class="fas fa-broadcast-tower w-5"></i><span class="font-bold text-sm">실시간 피드</span>
             </button>
-          </div>
         </nav>
 
-        <main className="flex-1 p-8 overflow-y-auto">
-          {view === 'dashboard' && (
-            <div className="space-y-8">
-              <div className="bg-indigo-600 text-white p-3 rounded-xl flex items-center justify-center gap-3 text-sm font-medium">
-                <Megaphone size={16} />
-                <span>[현재 홈페이지 공지] {mainNotice}</span>
-              </div>
+        <div class="p-8 border-t border-white/5 text-center">
+            <div id="conn-status" class="text-[10px] text-yellow-500 font-bold mb-4 uppercase animate-pulse">Connecting...</div>
+        </div>
+    </aside>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                  <p className="text-slate-500 text-sm font-medium">총 상품 수</p>
-                  <h2 className="text-3xl font-bold mt-2">{giftCards.length}개</h2>
-                </div>
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                  <p className="text-slate-500 text-sm font-medium">입금 대기중</p>
-                  <h2 className="text-3xl font-bold mt-2 text-orange-500">{orders.filter(o => o.status === 'PENDING').length}건</h2>
-                </div>
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                  <p className="text-slate-500 text-sm font-medium">오늘 완료 주문</p>
-                  <h2 className="text-3xl font-bold mt-2 text-green-500">
-                    {orders.filter(o => o.status === 'COMPLETED' && new Date(o.processedAt).toDateString() === new Date().toDateString()).length}건
-                  </h2>
-                </div>
-              </div>
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden">
+        <header class="h-24 flex items-center justify-between px-10 border-b border-white/5 bg-[#0f0a1e]/80 backdrop-blur-md z-20">
+            <h2 id="tab-title" class="text-2xl font-black">홈 설정 제어</h2>
+            <button id="save-btn" onclick="saveSettings()" class="px-8 py-3.5 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl font-black text-sm transition-all active:scale-95">
+                설정값 클라우드 저장
+            </button>
+        </header>
 
-              <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
-                <h3 className="text-lg font-bold mb-6">홈페이지 실시간 연동 미리보기</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {giftCards.map(card => (
-                    <div key={card.id} className="border rounded-xl p-4 group">
-                      <div className="bg-slate-100 aspect-video rounded-lg mb-3 flex items-center justify-center font-bold text-slate-400">{card.category}</div>
-                      <h4 className="font-bold truncate">{card.name}</h4>
-                      <p className="text-indigo-600 font-bold mt-1">₩{card.price.toLocaleString()}</p>
+        <div class="flex-1 overflow-y-auto p-10 bg-[#0f0a1e]">
+            <!-- TAB: HOME SETTINGS -->
+            <div id="tab-home" class="tab-content active space-y-8 animate-slide">
+                <div class="glass-panel rounded-[32px] p-8 space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label class="text-[11px] font-black text-white/40 uppercase ml-1">상단 공지 텍스트</label>
+                            <input type="text" id="topNotice" class="input-field">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[11px] font-black text-white/40 uppercase ml-1">오늘 판매 수량</label>
+                            <input type="number" id="totalSales" class="input-field font-mono">
+                        </div>
                     </div>
-                  ))}
                 </div>
-              </div>
             </div>
-          )}
 
-          {view === 'inventory' && (
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-bold">기프트카드 관리 목록</h3>
-                <button onClick={() => { setEditingCard(null); setIsModalOpen(true); }} className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium shadow-md shadow-indigo-100">
-                  <Plus size={16} /> 신규 추가
-                </button>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <thead className="border-b text-slate-400 font-medium">
-                    <tr><th className="pb-4 px-4">상품명</th><th className="pb-4 px-4">카테고리</th><th className="pb-4 px-4">판매가</th><th className="pb-4 px-4 text-right">관리</th></tr>
-                  </thead>
-                  <tbody className="divide-y">
-                    {giftCards.map(card => (
-                      <tr key={card.id} className="hover:bg-slate-50 transition-colors">
-                        <td className="py-4 px-4 font-semibold">{card.name}</td>
-                        <td className="py-4 px-4 text-slate-500"><span className="bg-slate-100 px-2 py-1 rounded text-xs">{card.category}</span></td>
-                        <td className="py-4 px-4 font-bold text-indigo-600">₩{card.price.toLocaleString()}</td>
-                        <td className="py-4 px-4 text-right space-x-2">
-                          <button onClick={() => { setEditingCard(card); setIsModalOpen(true); }} className="p-2 text-slate-400 hover:text-indigo-600"><Edit3 size={16} /></button>
-                          <button onClick={() => handleDeleteCard(card.id)} className="p-2 text-slate-400 hover:text-red-600"><Trash2 size={16} /></button>
+            <!-- TAB: ORDER MANAGEMENT -->
+            <div id="tab-orders" class="tab-content space-y-6 animate-slide">
+                <div class="glass-panel rounded-[32px] overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-white/5 border-b border-white/5 text-center text-[10px] font-black text-white/40">
+                                <th class="p-6">신청시간</th>
+                                <th class="p-6">입금자명</th>
+                                <th class="p-6">주문 상품</th>
+                                <th class="p-6">금액</th>
+                                <th class="p-6">상태</th>
+                                <th class="p-6">관리</th>
+                            </tr>
+                        </thead>
+                        <tbody id="order-list" class="text-center text-sm"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB: LIVE FEED -->
+            <div id="tab-live" class="tab-content space-y-6 animate-slide">
+                <div class="glass-panel rounded-[32px] p-8">
+                    <h3 class="text-xl font-bold mb-6">Manual Feed Injection</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-white/5 p-6 rounded-[24px]">
+                        <input type="text" id="feed-name" class="input-field" placeholder="구매자명">
+                        <input type="text" id="feed-product" class="input-field" placeholder="상품명">
+                        <input type="text" id="feed-price" class="input-field" placeholder="가격">
+                        <button onclick="addLiveFeed()" class="bg-purple-600 rounded-xl font-bold text-sm">피드 추가</button>
+                    </div>
+                    <div id="feed-list" class="mt-8 space-y-2"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection, serverTimestamp, updateDoc, deleteDoc, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'rootoo-pay-main';
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let user = null;
+
+        window.switchTab = (tabId) => {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+            document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+        };
+
+        const initAuth = async () => {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+                await signInAnonymously(auth);
+            }
+        };
+
+        initAuth();
+
+        onAuthStateChanged(auth, (u) => {
+            user = u;
+            if (user) {
+                document.getElementById('conn-status').innerText = "System Online";
+                document.getElementById('conn-status').className = "text-[10px] text-emerald-500 font-bold mb-4 uppercase";
+                startSyncing();
+            }
+        });
+
+        function startSyncing() {
+            // FIX: 6개 세그먼트 (index.html과 동일한 경로)
+            const settingsRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main');
+            onSnapshot(settingsRef, (snap) => {
+                if (snap.exists()) {
+                    const data = snap.data();
+                    document.getElementById('topNotice').value = data.topNotice || "";
+                    document.getElementById('totalSales').value = data.totalSales || 0;
+                }
+            });
+
+            const ordersRef = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
+            onSnapshot(ordersRef, (snapshot) => {
+                const tbody = document.getElementById('order-list');
+                tbody.innerHTML = '';
+                const orders = [];
+                snapshot.forEach(doc => orders.push({ id: doc.id, ...doc.data() }));
+                orders.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+
+                orders.forEach(order => {
+                    const time = order.timestamp ? new Date(order.timestamp.seconds * 1000).toLocaleString() : '...';
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b border-white/5";
+                    tr.innerHTML = `
+                        <td class="p-6 text-white/40 font-mono text-xs">${time}</td>
+                        <td class="p-6 font-bold text-white">${order.customerName}</td>
+                        <td class="p-6">${order.productName}</td>
+                        <td class="p-6 text-purple-400">${order.price}원</td>
+                        <td class="p-6 text-xs text-yellow-500">${order.status}</td>
+                        <td class="p-6 flex justify-center space-x-2">
+                            <button onclick="window.deleteOrder('${order.id}')" class="p-2 hover:text-red-500"><i class="fas fa-trash-alt"></i></button>
                         </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+                    `;
+                    tbody.appendChild(tr);
+                });
+            });
 
-          {view === 'orders' && (
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-              <h3 className="text-lg font-bold mb-6">주문 입금 관리</h3>
-              <div className="space-y-4">
-                {orders.map(order => (
-                  <div key={order.id} className="flex flex-col md:flex-row md:items-center justify-between p-4 border rounded-xl">
-                    <div className="flex items-center gap-4">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${order.status === 'PENDING' ? 'bg-orange-100 text-orange-600' : 'bg-green-100 text-green-600'}`}>
-                        {order.status === 'PENDING' ? <Clock size={20} /> : <CheckCircle size={20} />}
-                      </div>
-                      <div>
-                        <h4 className="font-bold">{order.customerName} - {order.cardName}</h4>
-                        <p className="text-xs text-slate-500">₩{order.price.toLocaleString()} · {new Date(order.createdAt).toLocaleString()}</p>
-                      </div>
-                    </div>
-                    <div className="mt-4 md:mt-0">
-                      {order.status === 'PENDING' ? (
-                        <button onClick={() => updateOrderStatus(order.id, 'COMPLETED')} className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium">입금확인</button>
-                      ) : (
-                        <button onClick={() => updateOrderStatus(order.id, 'PENDING')} className="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-medium">대기전환</button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </main>
-      </div>
+            const feedRef = collection(db, 'artifacts', appId, 'public', 'data', 'liveFeed');
+            onSnapshot(feedRef, (snapshot) => {
+                const container = document.getElementById('feed-list');
+                container.innerHTML = '';
+                snapshot.forEach(docSnap => {
+                    const feed = docSnap.data();
+                    const div = document.createElement('div');
+                    div.className = "p-4 bg-white/5 rounded-xl flex justify-between items-center";
+                    div.innerHTML = `
+                        <span class="text-xs"><b>${feed.name}</b>님이 ${feed.product} 구매</span>
+                        <button onclick="window.deleteFeed('${docSnap.id}')" class="text-white/20 hover:text-red-500"><i class="fas fa-times"></i></button>
+                    `;
+                    container.appendChild(div);
+                });
+            });
+        }
 
-      {/* Notice Modal */}
-      {isNoticeModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-3xl w-full max-w-md p-8 shadow-2xl relative">
-            <button onClick={() => setIsNoticeModalOpen(false)} className="absolute top-6 right-6 text-slate-400"><X size={24} /></button>
-            <h3 className="text-2xl font-bold mb-6 text-orange-600">상단 공지 수정</h3>
-            <form onSubmit={handleUpdateNotice} className="space-y-4">
-              <textarea name="noticeText" defaultValue={mainNotice} required rows="3" className="w-full px-4 py-3 rounded-xl border border-slate-200" />
-              <button type="submit" className="w-full bg-orange-600 text-white py-4 rounded-xl font-bold">저장</button>
-            </form>
-          </div>
-        </div>
-      )}
+        window.saveSettings = async () => {
+            const notice = document.getElementById('topNotice').value;
+            const sales = parseInt(document.getElementById('totalSales').value);
+            const settingsRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main');
+            await setDoc(settingsRef, { topNotice: notice, totalSales: sales }, { merge: true });
+            alert("클라우드 저장 완료!");
+        };
 
-      {/* Product Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-3xl w-full max-w-md p-8 shadow-2xl relative">
-            <button onClick={() => { setIsModalOpen(false); setEditingCard(null); }} className="absolute top-6 right-6 text-slate-400"><X size={24} /></button>
-            <h3 className="text-2xl font-bold mb-6 text-indigo-600">{editingCard ? '상품 수정' : '신규 등록'}</h3>
-            <form onSubmit={handleSaveCard} className="space-y-5">
-              <input name="name" defaultValue={editingCard?.name} required placeholder="이름" className="w-full px-4 py-3 rounded-xl border" />
-              <input name="category" defaultValue={editingCard?.category} required placeholder="카테고리" className="w-full px-4 py-3 rounded-xl border" />
-              <input name="price" type="number" defaultValue={editingCard?.price} required placeholder="가격" className="w-full px-4 py-3 rounded-xl border" />
-              <button type="submit" className="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold">저장</button>
-            </form>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
+        window.deleteOrder = async (id) => {
+            if(!confirm('삭제하시겠습니까?')) return;
+            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', id));
+        };
 
-export default App;
+        window.addLiveFeed = async () => {
+            const name = document.getElementById('feed-name').value;
+            const product = document.getElementById('feed-product').value;
+            const price = document.getElementById('feed-price').value;
+            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'liveFeed'), {
+                name, product, price, time: serverTimestamp()
+            });
+        };
+
+        window.deleteFeed = async (id) => {
+            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'liveFeed', id));
+        };
+    </script>
+</body>
+</html>
