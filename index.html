@@ -139,7 +139,7 @@
             transform: rotate(-15deg);
         }
 
-        /* iPhone 12 Mini specific adjustments (approx 375px wide) */
+        /* iPhone 12 Mini specific adjustments */
         @media (max-width: 390px) {
             .hero-title { font-size: 2.5rem; }
             .baemin-banner { padding: 1.5rem; }
@@ -178,10 +178,6 @@
             </div>
 
             <div class="flex items-center space-x-2 md:space-x-4">
-                <div id="connection-status" class="hidden">
-                    <span id="sync-dot"></span>
-                    <span id="sync-text"></span>
-                </div>
                 <button class="px-3 py-1.5 md:px-5 md:py-2.5 bg-white/5 border border-white/10 rounded-full text-[9px] md:text-xs font-black hover:bg-white/10 transition-all">
                     포인트 조회
                 </button>
@@ -193,7 +189,6 @@
     <section class="relative pt-12 md:pt-20 pb-20 md:pb-32 px-5 md:px-6">
         <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div class="space-y-6 md:space-y-8 relative z-10 text-center lg:text-left">
-                <!-- Headline Updated -->
                 <h1 class="hero-title text-4xl md:text-7xl">간편하게<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">기프트카드</span><br>구매 가능.</h1>
                 <p class="text-sm md:text-lg text-white/50 max-w-md font-medium leading-relaxed mx-auto lg:mx-0 px-4 md:px-0">
                     안전하고 빠르게 기프트카드 코드 받고!<br class="md:hidden"> 저렴하게도 구매해보자!
@@ -209,7 +204,7 @@
             </div>
 
             <div class="relative mt-8 lg:mt-0">
-                <div class="floating-card glass-card p-6 md:p-8 rounded-[32px] md:rounded-[40px] bg-white/5 border border-white/10 backdrop-blur-xl relative z-20 w-full max-w-[420px] mx-auto lg:ml-auto">
+                <div class="floating-card p-6 md:p-8 rounded-[32px] md:rounded-[40px] bg-white/5 border border-white/10 backdrop-blur-xl relative z-20 w-full max-w-[420px] mx-auto lg:ml-auto">
                     <div class="flex justify-between items-start mb-6 md:mb-8">
                         <div>
                             <h3 class="text-lg md:text-xl font-bold mb-1">실시간 구매 현황</h3>
@@ -223,7 +218,6 @@
                         <div class="py-10 text-center text-white/20 text-xs italic">데이터 연결 중...</div>
                     </div>
                 </div>
-                <div class="absolute -top-10 -right-10 w-48 md:w-64 h-48 md:h-64 bg-purple-600/20 rounded-full blur-[80px] md:blur-[100px] -z-10"></div>
             </div>
         </div>
     </section>
@@ -281,10 +275,6 @@
                     </p>
                     <p class="text-white/20 mt-4">루투페이는 상품권 유통 대행 시스템을 제공하며, 각 기프트카드의 소유권은 해당 발행사에 있습니다.</p>
                 </div>
-
-                <div class="pt-8">
-                    <p class="text-[9px] md:text-[10px] font-bold text-white/10 uppercase tracking-[0.2em]">© 2025 RootooPay Cloud Sync. All Rights Reserved.</p>
-                </div>
             </div>
         </div>
     </footer>
@@ -295,6 +285,7 @@
     <!-- Payment Modal -->
     <div id="payment-modal" class="modal-backdrop fixed inset-0 z-[200] items-center justify-center p-4 md:p-6" onclick="closePaymentModal()">
         <div class="modal-content w-full max-w-[840px] max-h-[90vh] md:max-h-none overflow-y-auto bg-[#140e29] border border-white/10 rounded-[32px] md:rounded-[40px] shadow-2xl flex flex-col md:flex-row" onclick="event.stopPropagation()">
+            <!-- Left Info Panel -->
             <div class="w-full md:w-[320px] bg-gradient-to-b from-purple-900/40 to-[#140e29] p-7 md:p-10 border-b md:border-b-0 md:border-r border-white/5">
                 <div id="modal-item-icon-bg" class="w-14 h-14 md:w-16 md:h-16 rounded-2xl md:rounded-3xl mb-6 md:mb-8 flex items-center justify-center shadow-2xl bg-gradient-to-br from-purple-500 to-indigo-600">
                     <i id="modal-item-icon" class="text-2xl md:text-3xl text-white"></i>
@@ -310,6 +301,8 @@
                 <p class="text-[9px] md:text-[10px] font-black text-purple-400 uppercase tracking-widest mb-1">Total Payment</p>
                 <p id="modal-final-price" class="text-2xl md:text-3xl font-black text-white stat-font">0원</p>
             </div>
+            
+            <!-- Right Form Panel -->
             <div class="flex-1 p-7 md:p-10 bg-[#1a142e] relative">
                 <button onclick="closePaymentModal()" class="absolute top-6 right-6 text-white/20 hover:text-white transition-colors"><i class="fas fa-times text-lg"></i></button>
                 <div class="mb-8 md:mb-10">
@@ -317,6 +310,7 @@
                     <p class="text-[10px] md:text-xs text-white/40 mt-1 uppercase tracking-widest font-mono">Cloud Payment System</p>
                 </div>
                 <div class="space-y-6">
+                    <!-- Bank Info -->
                     <div class="space-y-3">
                         <label class="text-[9px] md:text-[10px] font-black text-purple-400 uppercase tracking-widest">입금 계좌</label>
                         <div class="p-4 md:p-5 custom-input rounded-xl md:rounded-2xl flex items-center justify-between">
@@ -327,10 +321,19 @@
                             </div>
                         </div>
                     </div>
-                    <div class="space-y-3">
-                        <label class="text-[9px] md:text-[10px] font-black text-purple-400 uppercase tracking-widest">입금자 성함</label>
-                        <input type="text" id="sender-name" placeholder="입금하시는 분 성함" class="w-full p-4 md:p-5 custom-input rounded-xl md:rounded-2xl text-sm focus:outline-none text-white">
+                    
+                    <!-- Input Fields -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <label class="text-[9px] md:text-[10px] font-black text-purple-400 uppercase tracking-widest ml-1">입금자 성함</label>
+                            <input type="text" id="sender-name" placeholder="실명 입력" class="w-full p-4 md:p-5 custom-input rounded-xl md:rounded-2xl text-sm focus:outline-none text-white">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[9px] md:text-[10px] font-black text-purple-400 uppercase tracking-widest ml-1">휴대폰 번호</label>
+                            <input type="tel" id="sender-phone" placeholder="- 없이 입력" class="w-full p-4 md:p-5 custom-input rounded-xl md:rounded-2xl text-sm focus:outline-none text-white">
+                        </div>
                     </div>
+                    
                     <button id="submit-payment" class="w-full py-4 md:py-5 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl md:rounded-2xl font-black text-base md:text-lg shadow-xl active:scale-95 transition-all">
                         입금 완료 요청하기
                     </button>
@@ -463,35 +466,48 @@
         window.closePaymentModal = () => { document.getElementById('payment-modal').style.display = 'none'; };
 
         document.getElementById('submit-payment').onclick = async () => {
-            const nameInput = document.getElementById('sender-name');
-            const name = nameInput.value.trim();
+            const name = document.getElementById('sender-name').value.trim();
+            const phone = document.getElementById('sender-phone').value.trim();
             const btn = document.getElementById('submit-payment');
+            
             if (!name) return showToast("오류", "입금자 성함을 입력해 주세요.");
+            if (!phone) return showToast("오류", "휴대폰 번호를 입력해 주세요.");
             if (!user) return showToast("오류", "서버 연결 중...");
+            
             try {
                 btn.disabled = true;
                 btn.innerText = "처리 중...";
+                
                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'orders'), {
-                    customerName: name, productName: selectedProduct.name, price: selectedProduct.price,
-                    status: '입금확인중', createdAt: serverTimestamp(), uid: user.uid
+                    customerName: name,
+                    customerPhone: phone,
+                    productName: selectedProduct.name,
+                    price: selectedProduct.price,
+                    status: '입금확인중',
+                    createdAt: serverTimestamp(),
+                    uid: user.uid
                 });
+                
                 await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main'), { totalSales: increment(1) });
+                
                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'liveFeed'), {
                     name: name.length > 2 ? name[0] + "*" + name[name.length-1] : name[0] + "*",
                     product: selectedProduct.name, price: selectedProduct.price, time: serverTimestamp()
                 });
+                
                 document.querySelector('.modal-content').innerHTML = `
                     <div class="w-full p-12 md:p-20 flex flex-col items-center text-center space-y-6 bg-[#1a142e]">
                         <div class="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg animate-bounce">
                             <i class="fas fa-check text-2xl text-white"></i>
                         </div>
                         <h3 class="text-2xl md:text-3xl font-black text-white">요청 완료</h3>
-                        <p class="text-white/40 text-xs md:text-sm">입금이 확인되면 즉시 발송됩니다.</p>
+                        <p class="text-white/40 text-xs md:text-sm">입금이 확인되면 즉시 코드가 발송됩니다.</p>
                         <button onclick="location.reload()" class="px-8 py-3 bg-purple-600 rounded-xl font-bold text-white">확인</button>
                     </div>`;
             } catch (err) {
                 showToast("오류", "전송 실패");
                 btn.disabled = false;
+                btn.innerText = "입금 완료 요청하기";
             }
         };
     </script>
