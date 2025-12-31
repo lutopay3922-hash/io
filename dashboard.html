@@ -1,89 +1,358 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <title>대시보드</title>
-</head>
-<body>
+import React, { useState, useEffect } from 'react';
+import { initializeApp } from 'firebase/app';
+import { 
+  getFirestore, 
+  collection, 
+  doc, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  onSnapshot, 
+  getDoc,
+  setDoc
+} from 'firebase/firestore';
+import { 
+  getAuth, 
+  signInAnonymously, 
+  signInWithCustomToken, 
+  onAuthStateChanged 
+} from 'firebase/auth';
+import { 
+  Bell, 
+  Plus, 
+  Trash2, 
+  Edit3, 
+  ShoppingBag, 
+  CheckCircle, 
+  Clock, 
+  X,
+  CreditCard,
+  LayoutDashboard,
+  Tag,
+  Megaphone,
+  Save
+} from 'lucide-react';
 
-<h1>대시보드</h1>
-
-<h3>메인 문구 수정</h3>
-<input id="titleInput" placeholder="메인 제목">
-<input id="descInput" placeholder="설명">
-<br><br>
-<button onclick="saveData()">변경사항 즉시 적용</button>
-
-<hr>
-
-<h3>주문 목록</h3>
-<table border="1">
-  <thead>
-    <tr>
-      <th>주문번호</th>
-      <th>이름</th>
-      <th>휴대폰</th>
-      <th>상태</th>
-      <th>관리</th>
-    </tr>
-  </thead>
-  <tbody id="orderTable"></tbody>
-</table>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, setDoc, collection, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "여기에_API_KEY",
-  authDomain: "zcash-web.firebaseapp.com",
-  projectId: "zcash-web",
-};
-
+// Firebase configuration using environment variables
+const firebaseConfig = JSON.parse(__firebase_config);
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 const db = getFirestore(app);
+// 중요: index.html과 동일한 appId를 사용해야 데이터가 공유됩니다.
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'giftcard-system-001';
 
-/* 🔴 메인 데이터 저장 */
-window.saveData = async function () {
-  await setDoc(doc(db, "siteData", "main"), {
-    title: document.getElementById("titleInput").value,
-    desc: document.getElementById("descInput").value,
-    updatedAt: Date.now()
-  });
-  alert("실시간 반영 완료");
+const App = () => {
+  const [user, setUser] = useState(null);
+  const [view, setView] = useState('dashboard'); // 'dashboard' | 'inventory' | 'orders'
+  const [giftCards, setGiftCards] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isNoticeModalOpen, setIsNoticeModalOpen] = useState(false);
+  const [editingCard, setEditingCard] = useState(null);
+  const [mainNotice, setMainNotice] = useState("환영합니다! 정직하고 빠른 기프트카드 거래소입니다.");
+
+  // Auth Initialization
+  useEffect(() => {
+    const initAuth = async () => {
+      if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+        await signInWithCustomToken(auth, __initial_auth_token);
+      } else {
+        await signInAnonymously(auth);
+      }
+    };
+    initAuth();
+    const unsubscribe = onAuthStateChanged(auth, setUser);
+    return () => unsubscribe();
+  }, []);
+
+  // Real-time Data Sync (Gift Cards)
+  useEffect(() => {
+    if (!user) return;
+    const cardsRef = collection(db, 'artifacts', appId, 'public', 'data', 'giftcards');
+    const unsubscribe = onSnapshot(cardsRef, (snapshot) => {
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setGiftCards(data);
+    }, (err) => console.error("Firestore Error:", err));
+    return () => unsubscribe();
+  }, [user]);
+
+  // Real-time Data Sync (Orders)
+  useEffect(() => {
+    if (!user) return;
+    const ordersRef = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
+    const unsubscribe = onSnapshot(ordersRef, (snapshot) => {
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setOrders(data.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)));
+      const pending = data.filter(o => o.status === 'PENDING');
+      setNotifications(pending);
+    }, (err) => console.error("Firestore Error:", err));
+    return () => unsubscribe();
+  }, [user]);
+
+  // Real-time Data Sync (Notice Settings)
+  useEffect(() => {
+    if (!user) return;
+    const noticeRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'notice');
+    const unsubscribe = onSnapshot(noticeRef, (docSnap) => {
+      if (docSnap.exists()) {
+        setMainNotice(docSnap.data().text);
+      }
+    });
+    return () => unsubscribe();
+  }, [user]);
+
+  // Update Notice Function
+  const handleUpdateNotice = async (e) => {
+    e.preventDefault();
+    const newText = new FormData(e.target).get('noticeText');
+    try {
+      await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'notice'), {
+        text: newText,
+        updatedAt: Date.now()
+      });
+      setIsNoticeModalOpen(false);
+    } catch (err) {
+      console.error("Notice Update Error:", err);
+    }
+  };
+
+  // Handle Card Add/Update
+  const handleSaveCard = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const cardData = {
+      name: formData.get('name'),
+      price: Number(formData.get('price')),
+      category: formData.get('category'),
+      updatedAt: Date.now()
+    };
+
+    try {
+      if (editingCard) {
+        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'giftcards', editingCard.id), cardData);
+      } else {
+        cardData.createdAt = Date.now();
+        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'giftcards'), cardData);
+      }
+      setIsModalOpen(false);
+      setEditingCard(null);
+    } catch (err) {
+      console.error("Save Error:", err);
+    }
+  };
+
+  const handleDeleteCard = async (id) => {
+    if (!window.confirm('정말 삭제하시겠습니까?')) return;
+    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'giftcards', id));
+  };
+
+  const updateOrderStatus = async (orderId, status) => {
+    try {
+      await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', orderId), {
+        status: status,
+        processedAt: Date.now()
+      });
+    } catch (err) {
+      console.error("Status Update Error:", err);
+    }
+  };
+
+  // Mock Purchase 기능 (관리자 페이지 내부 테스트용)
+  const placeOrder = async (card) => {
+    const newOrder = {
+      cardName: card.name,
+      cardId: card.id,
+      price: card.price,
+      customerName: "홍길동(테스트)",
+      status: 'PENDING',
+      createdAt: Date.now()
+    };
+    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'orders'), newOrder);
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
+      <header className="bg-white border-b sticky top-0 z-40 px-6 py-4 flex justify-between items-center">
+        <div className="flex items-center gap-2 font-bold text-xl text-indigo-600">
+          <CreditCard className="w-8 h-8" />
+          <span>GIFT-ADMIN</span>
+        </div>
+        
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => setIsNoticeModalOpen(true)}
+            className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-orange-600 bg-orange-50 rounded-full hover:bg-orange-100 transition-colors"
+          >
+            <Megaphone size={14} /> 상단 공지 설정
+          </button>
+
+          <div className="relative group ml-2">
+            <Bell className="w-6 h-6 text-slate-400 cursor-pointer hover:text-indigo-600 transition-colors" />
+            {notifications.length > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center animate-pulse">
+                {notifications.length}
+              </span>
+            )}
+            <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-xl border p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+              <h3 className="font-bold border-b pb-2 mb-2">미처리 주문 알림</h3>
+              <div className="max-h-60 overflow-y-auto text-xs">
+                {notifications.length === 0 ? "새로운 주문이 없습니다." : notifications.map(n => (
+                  <div key={n.id} className="p-2 border-b last:border-0">{n.customerName}: {n.cardName} 대기</div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div className="flex h-[calc(100vh-73px)]">
+        <nav className="w-64 bg-white border-r p-6 hidden md:block">
+          <div className="space-y-2">
+            <button onClick={() => setView('dashboard')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${view === 'dashboard' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-500 hover:bg-slate-50'}`}>
+              <LayoutDashboard size={18} /> 대시보드
+            </button>
+            <button onClick={() => setView('inventory')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${view === 'inventory' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-500 hover:bg-slate-50'}`}>
+              <ShoppingBag size={18} /> 기프트카드 관리
+            </button>
+            <button onClick={() => setView('orders')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${view === 'orders' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-500 hover:bg-slate-50'}`}>
+              <Clock size={18} /> 주문 현황
+            </button>
+          </div>
+        </nav>
+
+        <main className="flex-1 p-8 overflow-y-auto">
+          {view === 'dashboard' && (
+            <div className="space-y-8">
+              <div className="bg-indigo-600 text-white p-3 rounded-xl flex items-center justify-center gap-3 text-sm font-medium">
+                <Megaphone size={16} />
+                <span>[현재 홈페이지 공지] {mainNotice}</span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                  <p className="text-slate-500 text-sm font-medium">총 상품 수</p>
+                  <h2 className="text-3xl font-bold mt-2">{giftCards.length}개</h2>
+                </div>
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                  <p className="text-slate-500 text-sm font-medium">입금 대기중</p>
+                  <h2 className="text-3xl font-bold mt-2 text-orange-500">{orders.filter(o => o.status === 'PENDING').length}건</h2>
+                </div>
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                  <p className="text-slate-500 text-sm font-medium">오늘 완료 주문</p>
+                  <h2 className="text-3xl font-bold mt-2 text-green-500">
+                    {orders.filter(o => o.status === 'COMPLETED' && new Date(o.processedAt).toDateString() === new Date().toDateString()).length}건
+                  </h2>
+                </div>
+              </div>
+
+              <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
+                <h3 className="text-lg font-bold mb-6">홈페이지 실시간 연동 미리보기</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {giftCards.map(card => (
+                    <div key={card.id} className="border rounded-xl p-4 group">
+                      <div className="bg-slate-100 aspect-video rounded-lg mb-3 flex items-center justify-center font-bold text-slate-400">{card.category}</div>
+                      <h4 className="font-bold truncate">{card.name}</h4>
+                      <p className="text-indigo-600 font-bold mt-1">₩{card.price.toLocaleString()}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {view === 'inventory' && (
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-bold">기프트카드 관리 목록</h3>
+                <button onClick={() => { setEditingCard(null); setIsModalOpen(true); }} className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium shadow-md shadow-indigo-100">
+                  <Plus size={16} /> 신규 추가
+                </button>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="border-b text-slate-400 font-medium">
+                    <tr><th className="pb-4 px-4">상품명</th><th className="pb-4 px-4">카테고리</th><th className="pb-4 px-4">판매가</th><th className="pb-4 px-4 text-right">관리</th></tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {giftCards.map(card => (
+                      <tr key={card.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="py-4 px-4 font-semibold">{card.name}</td>
+                        <td className="py-4 px-4 text-slate-500"><span className="bg-slate-100 px-2 py-1 rounded text-xs">{card.category}</span></td>
+                        <td className="py-4 px-4 font-bold text-indigo-600">₩{card.price.toLocaleString()}</td>
+                        <td className="py-4 px-4 text-right space-x-2">
+                          <button onClick={() => { setEditingCard(card); setIsModalOpen(true); }} className="p-2 text-slate-400 hover:text-indigo-600"><Edit3 size={16} /></button>
+                          <button onClick={() => handleDeleteCard(card.id)} className="p-2 text-slate-400 hover:text-red-600"><Trash2 size={16} /></button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {view === 'orders' && (
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+              <h3 className="text-lg font-bold mb-6">주문 입금 관리</h3>
+              <div className="space-y-4">
+                {orders.map(order => (
+                  <div key={order.id} className="flex flex-col md:flex-row md:items-center justify-between p-4 border rounded-xl">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${order.status === 'PENDING' ? 'bg-orange-100 text-orange-600' : 'bg-green-100 text-green-600'}`}>
+                        {order.status === 'PENDING' ? <Clock size={20} /> : <CheckCircle size={20} />}
+                      </div>
+                      <div>
+                        <h4 className="font-bold">{order.customerName} - {order.cardName}</h4>
+                        <p className="text-xs text-slate-500">₩{order.price.toLocaleString()} · {new Date(order.createdAt).toLocaleString()}</p>
+                      </div>
+                    </div>
+                    <div className="mt-4 md:mt-0">
+                      {order.status === 'PENDING' ? (
+                        <button onClick={() => updateOrderStatus(order.id, 'COMPLETED')} className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium">입금확인</button>
+                      ) : (
+                        <button onClick={() => updateOrderStatus(order.id, 'PENDING')} className="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-medium">대기전환</button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
+
+      {/* Notice Modal */}
+      {isNoticeModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl w-full max-w-md p-8 shadow-2xl relative">
+            <button onClick={() => setIsNoticeModalOpen(false)} className="absolute top-6 right-6 text-slate-400"><X size={24} /></button>
+            <h3 className="text-2xl font-bold mb-6 text-orange-600">상단 공지 수정</h3>
+            <form onSubmit={handleUpdateNotice} className="space-y-4">
+              <textarea name="noticeText" defaultValue={mainNotice} required rows="3" className="w-full px-4 py-3 rounded-xl border border-slate-200" />
+              <button type="submit" className="w-full bg-orange-600 text-white py-4 rounded-xl font-bold">저장</button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Product Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl w-full max-w-md p-8 shadow-2xl relative">
+            <button onClick={() => { setIsModalOpen(false); setEditingCard(null); }} className="absolute top-6 right-6 text-slate-400"><X size={24} /></button>
+            <h3 className="text-2xl font-bold mb-6 text-indigo-600">{editingCard ? '상품 수정' : '신규 등록'}</h3>
+            <form onSubmit={handleSaveCard} className="space-y-5">
+              <input name="name" defaultValue={editingCard?.name} required placeholder="이름" className="w-full px-4 py-3 rounded-xl border" />
+              <input name="category" defaultValue={editingCard?.category} required placeholder="카테고리" className="w-full px-4 py-3 rounded-xl border" />
+              <input name="price" type="number" defaultValue={editingCard?.price} required placeholder="가격" className="w-full px-4 py-3 rounded-xl border" />
+              <button type="submit" className="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold">저장</button>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
-/* 🔴 주문 실시간 표시 */
-onSnapshot(collection(db, "orders"), (snapshot) => {
-  const table = document.getElementById("orderTable");
-  table.innerHTML = "";
-
-  snapshot.forEach(docSnap => {
-    const o = docSnap.data();
-    table.innerHTML += `
-      <tr>
-        <td>${o.orderNo}</td>
-        <td>${o.buyer}</td>
-        <td>${o.phone}</td>
-        <td>${o.status}</td>
-        <td>
-          ${o.status === "입금대기"
-            ? `<button onclick="markPaid('${docSnap.id}')">입금완료</button>`
-            : "-"}
-        </td>
-      </tr>
-    `;
-  });
-});
-
-/* 🔴 입금완료 처리 */
-window.markPaid = async function (id) {
-  await updateDoc(doc(db, "orders", id), {
-    status: "입금완료"
-  });
-  alert("입금완료 처리됨");
-};
-</script>
-
-</body>
-</html>
+export default App;
