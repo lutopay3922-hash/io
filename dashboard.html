@@ -76,85 +76,65 @@
 
             <!-- Right Column: Settings & Controls -->
             <div class="space-y-10">
-                <!-- 3rd Section Banner Control (Updated) -->
+                <!-- Banner Control -->
                 <section class="glass p-8 rounded-[32px] space-y-6 border-t-4 border-cyan-500">
-                    <h3 class="text-lg font-bold border-b border-white/5 pb-4"><i class="fas fa-ad mr-2 text-cyan-400"></i>3번째 리미티드 배너 설정</h3>
+                    <h3 class="text-lg font-bold border-b border-white/5 pb-4"><i class="fas fa-ad mr-2 text-cyan-400"></i>리미티드 배너 설정</h3>
                     <div class="space-y-4">
                         <div>
-                            <label class="text-[10px] text-white/40 font-bold uppercase">배너 배경 색상</label>
+                            <label class="text-[10px] text-white/40 font-bold uppercase">배경 색상</label>
                             <select id="banner-bg" class="input-dark mt-1">
-                                <option value="linear-gradient(135deg, #2ac1bc 0%, #229a96 100%)">배민 민트 (기본)</option>
+                                <option value="linear-gradient(135deg, #2ac1bc 0%, #229a96 100%)">배민 민트</option>
                                 <option value="linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)">스카이 블루</option>
                                 <option value="linear-gradient(135deg, #a855f7 0%, #6366f1 100%)">퍼플 인디고</option>
                                 <option value="linear-gradient(135deg, #f59e0b 0%, #d97706 100%)">앰버 오렌지</option>
                                 <option value="linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)">로즈 레드</option>
-                                <option value="linear-gradient(135deg, #1f2937 0%, #111827 100%)">다크 그레이</option>
                             </select>
                         </div>
-                        <div>
-                            <label class="text-[10px] text-white/40 font-bold uppercase">배너 큰 제목</label>
-                            <input type="text" id="banner-title" placeholder="예: 배달의민족" class="input-dark mt-1">
-                        </div>
-                        <div>
-                            <label class="text-[10px] text-white/40 font-bold uppercase">할인율 강조 (텍스트)</label>
-                            <input type="text" id="banner-rate" placeholder="예: 12%" class="input-dark mt-1">
-                        </div>
-                        <div>
-                            <label class="text-[10px] text-white/40 font-bold uppercase">하단 상세 설명</label>
-                            <input type="text" id="banner-desc" placeholder="예: 배민 상품권 즉시 할인 진행 중" class="input-dark mt-1">
-                        </div>
-                        <div>
-                            <label class="text-[10px] text-white/40 font-bold uppercase">버튼 이름</label>
-                            <input type="text" id="banner-btn-text" placeholder="예: 혜택 받기" class="input-dark mt-1">
-                        </div>
-                        <button onclick="updateBannerSettings()" class="w-full py-4 bg-cyan-600 rounded-2xl font-bold text-sm hover:bg-cyan-500 transition-all active:scale-95 shadow-lg shadow-cyan-900/20">리미티드 배너 즉시 반영</button>
+                        <input type="text" id="banner-title" placeholder="배너 큰 제목" class="input-dark">
+                        <input type="text" id="banner-rate" placeholder="할인율 (예: 12%)" class="input-dark">
+                        <input type="text" id="banner-desc" placeholder="하단 상세 설명" class="input-dark">
+                        <input type="text" id="banner-btn-text" placeholder="버튼 텍스트" class="input-dark">
+                        <button onclick="updateBannerSettings()" class="w-full py-4 bg-cyan-600 rounded-2xl font-bold text-sm hover:bg-cyan-500 transition-all active:scale-95">설정 저장</button>
                     </div>
                 </section>
 
-                <!-- Top Notice Control -->
+                <!-- Top Notice & Sales -->
                 <section class="glass p-8 rounded-[32px] space-y-6">
-                    <h3 class="text-lg font-bold border-b border-white/5 pb-4"><i class="fas fa-bullhorn mr-2 text-purple-500"></i>상단 공지 & 판매량 설정</h3>
+                    <h3 class="text-lg font-bold border-b border-white/5 pb-4"><i class="fas fa-bullhorn mr-2 text-purple-500"></i>상단 공지 & 판매량</h3>
                     <div class="space-y-4">
-                        <div>
-                            <label class="text-[10px] text-white/40 font-bold uppercase">공지 내용</label>
-                            <input type="text" id="input-top-notice" placeholder="상단 공지 텍스트" class="input-dark mt-1">
-                        </div>
-                        <div>
-                            <label class="text-[10px] text-white/40 font-bold uppercase">가상 판매량 설정</label>
-                            <input type="number" id="input-total-sales" placeholder="총 판매량 수치" class="input-dark mt-1">
-                        </div>
-                        <button onclick="updateSettings()" class="w-full py-4 bg-purple-600 rounded-2xl font-bold text-sm hover:bg-purple-500 transition-all">설정 정보 즉시 적용</button>
+                        <input type="text" id="input-top-notice" placeholder="상단 공지 텍스트" class="input-dark">
+                        <input type="number" id="input-total-sales" placeholder="가상 판매량 수치" class="input-dark">
+                        <button onclick="updateSettings()" class="w-full py-4 bg-purple-600 rounded-2xl font-bold text-sm hover:bg-purple-500 transition-all">즉시 적용</button>
                     </div>
                 </section>
 
                 <!-- Product Add -->
                 <section class="glass p-8 rounded-[32px] space-y-6">
-                    <h3 class="text-lg font-bold border-b border-white/5 pb-4"><i class="fas fa-plus mr-2 text-emerald-500"></i>상품 신규 등록</h3>
+                    <h3 class="text-lg font-bold border-b border-white/5 pb-4"><i class="fas fa-plus mr-2 text-emerald-500"></i>신규 상품 등록</h3>
                     <div class="space-y-4">
-                        <input type="text" id="p-name" placeholder="상품명 (예: 신세계 상품권)" class="input-dark">
-                        <input type="number" id="p-price" placeholder="판매가 (숫자만)" class="input-dark">
-                        <input type="number" id="p-rate" placeholder="할인율 (예: 5)" class="input-dark">
+                        <input type="text" id="p-name" placeholder="상품명" class="input-dark">
+                        <input type="number" id="p-price" placeholder="판매가" class="input-dark">
+                        <input type="number" id="p-rate" placeholder="할인율 (%)" class="input-dark">
                         <select id="p-icon" class="input-dark">
-                            <option value="fas fa-utensils">식음료 (배민/쿠팡)</option>
-                            <option value="fas fa-shopping-bag">쇼핑 (신세계/컬리)</option>
-                            <option value="fas fa-gamepad">게임 (구글/넥슨)</option>
-                            <option value="fas fa-coffee">카페 (스타벅스)</option>
-                            <option value="fas fa-credit-card">기타 카드</option>
+                            <option value="fas fa-utensils">식음료</option>
+                            <option value="fas fa-shopping-bag">쇼핑</option>
+                            <option value="fas fa-gamepad">게임</option>
+                            <option value="fas fa-coffee">카페</option>
+                            <option value="fas fa-credit-card">기타</option>
                         </select>
-                        <button onclick="addProduct()" class="w-full py-4 bg-emerald-600 rounded-2xl font-bold text-sm hover:bg-emerald-500 transition-all">상품 등록하기</button>
+                        <button onclick="addProduct()" class="w-full py-4 bg-emerald-600 rounded-2xl font-bold text-sm hover:bg-emerald-500 transition-all">등록하기</button>
                     </div>
                 </section>
             </div>
         </div>
     </main>
 
-    <!-- Scripts -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { 
             getFirestore, collection, addDoc, onSnapshot, doc, 
-            setDoc, updateDoc, deleteDoc, query, orderBy, serverTimestamp 
+            setDoc, updateDoc, deleteDoc, serverTimestamp 
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -182,40 +162,59 @@
         });
 
         function initDashboard() {
-            // 1. 주문 목록
+            // 주문 목록 동기화
             const ordersRef = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
             onSnapshot(ordersRef, (snapshot) => {
                 const list = document.getElementById('order-list');
                 list.innerHTML = '';
                 document.getElementById('stat-today-orders').innerText = snapshot.size;
+                
                 if (snapshot.empty) {
                     list.innerHTML = '<div class="glass p-10 rounded-3xl text-center text-white/20 italic">신규 주문이 없습니다.</div>';
                     return;
                 }
+
                 const orders = [];
                 snapshot.forEach(docSnap => orders.push({id: docSnap.id, ...docSnap.data()}));
                 orders.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
                 orders.forEach(order => {
                     const div = document.createElement('div');
-                    div.className = "glass p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center border-l-2 border-purple-500/30";
+                    div.className = "glass p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center border-l-2 border-purple-500/30 gap-4";
                     div.innerHTML = `
                         <div class="flex items-center space-x-4">
-                            <div class="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-400"><i class="fas fa-wallet"></i></div>
-                            <div>
-                                <p class="text-[10px] text-white/40">${order.createdAt ? new Date(order.createdAt.seconds * 1000).toLocaleString() : 'Just now'}</p>
-                                <p class="font-bold text-white">${order.customerName} <span class="text-purple-400">/ ${order.productName}</span></p>
+                            <div class="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-400 flex-shrink-0">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="space-y-1">
+                                <div class="flex items-center space-x-2">
+                                    <span class="font-black text-white text-base">${order.customerName || '이름 없음'}</span>
+                                    <span class="px-2 py-0.5 bg-white/5 rounded text-[10px] text-purple-400 font-bold">${order.status || '입금대기'}</span>
+                                </div>
+                                <p class="text-xs font-medium text-cyan-400 font-mono tracking-tighter">${order.customerPhone || '번호 없음'}</p>
+                                <div class="flex items-center space-x-2 text-[10px] text-white/30">
+                                    <i class="fas fa-tag"></i>
+                                    <span>${order.productName}</span>
+                                    <span>•</span>
+                                    <span>${order.createdAt ? new Date(order.createdAt.seconds * 1000).toLocaleString() : '방금 전'}</span>
+                                </div>
                             </div>
                         </div>
-                        <div class="flex items-center space-x-4 mt-4 md:mt-0">
-                            <span class="font-black text-sm">${Number(order.price).toLocaleString()}원</span>
-                            <button onclick="deleteOrder('${order.id}')" class="p-2 text-white/20 hover:text-red-500 transition-colors"><i class="fas fa-trash"></i></button>
+                        <div class="flex items-center justify-between w-full md:w-auto md:space-x-6 border-t md:border-t-0 border-white/5 pt-4 md:pt-0">
+                            <div class="text-right">
+                                <p class="text-[9px] text-white/40 font-bold uppercase">Payment Amount</p>
+                                <p class="font-black text-lg text-white">${Number(order.price || 0).toLocaleString()}원</p>
+                            </div>
+                            <button onclick="deleteOrder('${order.id}')" class="w-10 h-10 rounded-xl bg-red-500/10 text-red-500/50 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center">
+                                <i class="fas fa-trash-alt text-sm"></i>
+                            </button>
                         </div>
                     `;
                     list.appendChild(div);
                 });
             });
 
-            // 2. 상품 목록 관리
+            // 상품 목록 동기화
             const productsRef = collection(db, 'artifacts', appId, 'public', 'data', 'products');
             onSnapshot(productsRef, (snapshot) => {
                 const list = document.getElementById('product-list');
@@ -229,16 +228,16 @@
                             <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center"><i class="${p.icon} text-white/50 text-xs"></i></div>
                             <div>
                                 <p class="text-sm font-bold text-white">${p.name}</p>
-                                <p class="text-[10px] text-purple-400">${p.rate}% 할인</p>
+                                <p class="text-[10px] text-purple-400">${p.rate}% 할인 | ${Number(p.price).toLocaleString()}원</p>
                             </div>
                         </div>
-                        <button onclick="deleteProduct('${docSnap.id}')" class="text-[10px] font-bold text-red-500/50 hover:text-red-500">삭제</button>
+                        <button onclick="deleteProduct('${docSnap.id}')" class="text-xs font-bold text-red-500/50 hover:text-red-500 p-2">삭제</button>
                     `;
                     list.appendChild(div);
                 });
             });
 
-            // 3. 설정 동기화
+            // 설정 동기화
             const settingsRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main');
             onSnapshot(settingsRef, (snap) => {
                 if(snap.exists()) {
@@ -246,43 +245,45 @@
                     document.getElementById('stat-total-sales').innerText = d.totalSales || 0;
                     document.getElementById('input-total-sales').value = d.totalSales || 0;
                     document.getElementById('input-top-notice').value = d.topNotice || "";
-                    
-                    // 배너 필드 업데이트
-                    document.getElementById('banner-title').value = d.bannerTitle || "배달의민족";
-                    document.getElementById('banner-rate').value = d.bannerRate || "12%";
+                    document.getElementById('banner-title').value = d.bannerTitle || "";
+                    document.getElementById('banner-rate').value = d.bannerRate || "";
                     document.getElementById('banner-desc').value = d.bannerDesc || "";
-                    document.getElementById('banner-btn-text').value = d.bannerBtnText || "혜택 받기";
+                    document.getElementById('banner-btn-text').value = d.bannerBtnText || "";
                     if(d.bannerBg) document.getElementById('banner-bg').value = d.bannerBg;
                 }
             });
         }
 
-        // --- 액션 함수들 ---
+        // Actions
+        window.deleteOrder = async (id) => {
+            if(confirm('주문 내역을 삭제하시겠습니까?')) {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', id));
+            }
+        };
+
+        window.deleteProduct = async (id) => {
+            if(confirm('상품을 삭제하시겠습니까?')) {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', id));
+            }
+        };
+
         window.updateSettings = async () => {
             const topNotice = document.getElementById('input-top-notice').value;
             const totalSales = parseInt(document.getElementById('input-total-sales').value) || 0;
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main'), { 
-                topNotice, 
-                totalSales 
-            }, { merge: true });
-            alert('기본 설정이 업데이트되었습니다.');
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main'), { topNotice, totalSales }, { merge: true });
+            alert('업데이트 완료');
         };
 
         window.updateBannerSettings = async () => {
-            const title = document.getElementById('banner-title').value;
-            const rate = document.getElementById('banner-rate').value;
-            const desc = document.getElementById('banner-desc').value;
-            const btnText = document.getElementById('banner-btn-text').value;
-            const bg = document.getElementById('banner-bg').value;
-            
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main'), {
-                bannerTitle: title,
-                bannerRate: rate,
-                bannerDesc: desc,
-                bannerBtnText: btnText,
-                bannerBg: bg
-            }, { merge: true });
-            alert('3번째 섹션 배너 설정이 저장되었습니다.');
+            const data = {
+                bannerTitle: document.getElementById('banner-title').value,
+                bannerRate: document.getElementById('banner-rate').value,
+                bannerDesc: document.getElementById('banner-desc').value,
+                bannerBtnText: document.getElementById('banner-btn-text').value,
+                bannerBg: document.getElementById('banner-bg').value
+            };
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main'), data, { merge: true });
+            alert('배너 설정 저장 완료');
         };
 
         window.addProduct = async () => {
@@ -290,28 +291,14 @@
             const price = document.getElementById('p-price').value;
             const rate = document.getElementById('p-rate').value;
             const icon = document.getElementById('p-icon').value;
-            if(!name || !price) return alert('상품 정보를 입력하세요.');
+            if(!name || !price) return alert('필수 정보를 입력하세요.');
             await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'products'), {
                 name, price, rate, icon, createdAt: serverTimestamp()
             });
-            alert('상품 등록 완료!');
+            alert('등록 완료');
             document.getElementById('p-name').value = '';
             document.getElementById('p-price').value = '';
-            document.getElementById('p-rate').value = '';
         };
-
-        window.deleteProduct = async (id) => {
-            if(confirm('이 상품을 삭제하시겠습니까? 사용자 페이지에서도 즉시 사라집니다.')) {
-                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', id));
-            }
-        };
-
-        window.deleteOrder = async (id) => {
-            if(confirm('주문 내역을 삭제하시겠습니까?')) {
-                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', id));
-            }
-        };
-
     </script>
 </body>
 </html>
