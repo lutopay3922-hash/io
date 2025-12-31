@@ -181,6 +181,45 @@
             background: rgba(255, 255, 255, 0.1);
             border-color: rgba(168, 85, 247, 0.4);
         }
+
+        /* 큰 내비게이션 버튼 스타일 */
+        .nav-btn-large {
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            background: rgba(168, 85, 247, 0.1);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+        .nav-btn-large i {
+            font-size: 1.25rem;
+            color: #a855f7;
+        }
+        .nav-btn-large:hover:not(:disabled) {
+            background: #a855f7;
+            border-color: #c084fc;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(168, 85, 247, 0.4);
+        }
+        .nav-btn-large:hover:not(:disabled) i {
+            color: white;
+        }
+        .nav-btn-large:active:not(:disabled) {
+            transform: scale(0.95);
+        }
+        .nav-btn-large:disabled {
+            opacity: 0.2;
+            cursor: not-allowed;
+            border-color: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .nav-btn-large:disabled i {
+            color: rgba(255, 255, 255, 0.3);
+        }
     </style>
 </head>
 <body class="min-h-screen" oncontextmenu="return false">
@@ -225,7 +264,7 @@
                     안전하고 빠르게 기프트카드 코드 받고!<br class="md:hidden"> 저렴하게도 구매해보자!
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4 pt-4 justify-center lg:justify-start">
-                    <button onclick="document.getElementById('giftcards').scrollIntoView({behavior: 'smooth'})" class="px-8 py-4 md:px-10 md:py-5 bg-purple-600 rounded-xl md:rounded-2xl font-black text-base md:text-lg shadow-[0_15px_30px_rgba(168,85,247,0.3)] active:scale-95 transition-all">
+                    <button onclick="document.getElementById('giftcards').scrollIntoView({behavior: 'smooth'})" class="px-8 py-4 md:px-10 md:py-5 bg-purple-600 rounded-xl md:rounded-2xl font-black text-base md:text-lg shadow-[0_15px_30_rgba(168,85,247,0.3)] active:scale-95 transition-all">
                         쇼핑 시작하기
                     </button>
                     <div class="flex items-center justify-center space-x-3 px-6 py-4 md:py-5 bg-white/5 border border-white/10 rounded-xl md:rounded-2xl">
@@ -272,16 +311,28 @@
 
     <!-- Gift Card Grid -->
     <section id="giftcards" class="max-w-7xl mx-auto px-5 md:px-6 py-12 md:py-20 scroll-mt-20">
+        <!-- 헤더: 제목은 왼쪽, 버튼은 맨 오른쪽 끝으로 배치 -->
         <div class="flex items-center justify-between mb-10 md:mb-16">
-            <h2 class="text-2xl md:text-4xl font-bold tracking-tight">인기 기프트카드</h2>
-            <div class="h-px flex-1 mx-4 md:mx-8 bg-white/10 rounded-full"></div>
+            <div class="flex items-center">
+                <h2 class="text-2xl md:text-4xl font-bold tracking-tight">인기 기프트카드</h2>
+            </div>
+            
+            <div class="flex items-center space-x-3 md:space-x-4">
+                <!-- Navigation Buttons: Right Aligned & Larger -->
+                <button id="nav-prev" class="nav-btn-large" onclick="window.changePageByNav(-1)" disabled>
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button id="nav-next" class="nav-btn-large" onclick="window.changePageByNav(1)" disabled>
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
         </div>
         
         <div id="giftcard-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-8 min-h-[400px]">
             <div class="col-span-full py-20 text-center text-white/20 text-sm">상품 데이터를 불러오는 중입니다...</div>
         </div>
 
-        <!-- Pagination Controls -->
+        <!-- Pagination Controls (Bottom) -->
         <div id="pagination-container" class="flex justify-center items-center space-x-3 mt-12 md:mt-16">
             <!-- Buttons will be injected here -->
         </div>
@@ -443,8 +494,12 @@
             if (allProducts.length === 0) {
                 grid.innerHTML = '<div class="col-span-full py-20 text-center text-white/20">등록된 상품이 없습니다.</div>';
                 pagination.innerHTML = '';
+                updateNavButtons(0);
                 return;
             }
+
+            const totalPages = Math.ceil(allProducts.length / itemsPerPage);
+            updateNavButtons(totalPages);
 
             // Calculate slicing indices
             const startIndex = (currentPage - 1) * itemsPerPage;
@@ -474,9 +529,27 @@
                 grid.appendChild(card);
             });
 
-            // Render Pagination Buttons
             renderPaginationControls();
         }
+
+        function updateNavButtons(totalPages) {
+            const prev = document.getElementById('nav-prev');
+            const next = document.getElementById('nav-next');
+            
+            if (prev) prev.disabled = currentPage <= 1;
+            if (next) next.disabled = currentPage >= totalPages;
+        }
+
+        window.changePageByNav = (direction) => {
+            const totalPages = Math.ceil(allProducts.length / itemsPerPage);
+            const newPage = currentPage + direction;
+            if (newPage >= 1 && newPage <= totalPages) {
+                currentPage = newPage;
+                renderProducts();
+                // 페이지 상단으로 부드럽게 이동
+                document.getElementById('giftcards').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        };
 
         function renderPaginationControls() {
             const container = document.getElementById('pagination-container');
@@ -492,7 +565,7 @@
                 btn.onclick = () => {
                     currentPage = i;
                     renderProducts();
-                    document.getElementById('giftcards').scrollIntoView({ behavior: 'smooth' });
+                    document.getElementById('giftcards').scrollIntoView({ behavior: 'smooth', block: 'start' });
                 };
                 container.appendChild(btn);
             }
@@ -518,10 +591,6 @@
                 snapshot.forEach(docSnap => {
                     allProducts.push({ id: docSnap.id, ...docSnap.data() });
                 });
-                
-                // Sort products by creation date or name if needed
-                // allProducts.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-                
                 renderProducts();
             });
 
