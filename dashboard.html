@@ -17,9 +17,40 @@
         .input-dark:focus { border-color: #a855f7; }
         select.input-dark option { background: #1a1525; color: white; }
         .image-preview { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; background: #222; }
+        
+        /* Login Overlay Style */
+        #login-overlay { position: fixed; inset: 0; z-index: 9999; background: #0a0514; display: flex; align-items: center; justify-content: center; transition: opacity 0.5s ease-out; }
+        .login-card { width: 100%; max-width: 400px; padding: 40px; border-radius: 32px; border: 1px solid rgba(168, 85, 247, 0.2); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
     </style>
 </head>
-<body class="min-h-screen pb-20">
+<body class="min-h-screen pb-20 overflow-hidden" id="main-body">
+    
+    <!-- Login Overlay -->
+    <div id="login-overlay">
+        <div class="login-card glass text-center">
+            <div class="w-16 h-16 bg-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-purple-500/20">
+                <i class="fas fa-user-shield text-white text-2xl"></i>
+            </div>
+            <h2 class="text-2xl font-bold mb-2 tracking-tight">ADMIN ACCESS</h2>
+            <p class="text-white/40 text-sm mb-8">관리자 계정으로 로그인하세요.</p>
+            
+            <div class="space-y-4 text-left">
+                <div>
+                    <label class="text-[10px] text-white/40 font-bold uppercase ml-1">ID</label>
+                    <input type="text" id="login-id" class="input-dark mt-1" placeholder="아이디 입력">
+                </div>
+                <div>
+                    <label class="text-[10px] text-white/40 font-bold uppercase ml-1">Password</label>
+                    <input type="password" id="login-pw" class="input-dark mt-1" placeholder="비밀번호 입력">
+                </div>
+                <button onclick="attemptLogin()" class="w-full py-4 bg-purple-600 rounded-2xl font-bold text-sm hover:bg-purple-500 transition-all active:scale-95 shadow-lg shadow-purple-600/20 mt-4">
+                    로그인 하기
+                </button>
+            </div>
+            <p id="login-error" class="text-red-500 text-xs mt-4 font-medium opacity-0">잘못된 계정 정보입니다.</p>
+        </div>
+    </div>
+
     <!-- Navigation -->
     <nav class="glass sticky top-0 z-50 px-6 py-4 flex justify-between items-center mb-10">
         <div class="flex items-center space-x-3">
@@ -28,9 +59,12 @@
             </div>
             <span class="font-bold tracking-tighter text-xl">ROOTOO <span class="text-purple-500">ADMIN</span></span>
         </div>
-        <div id="auth-status" class="text-xs font-bold text-white/40 flex items-center">
-            <span class="w-2 h-2 bg-yellow-500 rounded-full mr-2 animate-pulse"></span>
-            CONNECTING...
+        <div class="flex items-center space-x-6">
+            <div id="auth-status" class="text-xs font-bold text-white/40 flex items-center">
+                <span class="w-2 h-2 bg-yellow-500 rounded-full mr-2 animate-pulse"></span>
+                CONNECTING...
+            </div>
+            <button onclick="logout()" class="text-[10px] font-bold text-white/20 hover:text-white transition-colors uppercase tracking-widest">Logout</button>
         </div>
     </nav>
 
@@ -174,6 +208,51 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // --- Authentication System ---
+        const VALID_ID = "luto1004";
+        const VALID_PW = "fnxn00@@";
+
+        window.attemptLogin = () => {
+            const id = document.getElementById('login-id').value;
+            const pw = document.getElementById('login-pw').value;
+            const errorMsg = document.getElementById('login-error');
+
+            if (id === VALID_ID && pw === VALID_PW) {
+                sessionStorage.setItem('isAdmin', 'true');
+                checkAuthStatus();
+            } else {
+                errorMsg.style.opacity = "1";
+                setTimeout(() => { errorMsg.style.opacity = "0"; }, 2000);
+            }
+        };
+
+        window.logout = () => {
+            sessionStorage.removeItem('isAdmin');
+            location.reload();
+        };
+
+        function checkAuthStatus() {
+            const isLogged = sessionStorage.getItem('isAdmin');
+            if (isLogged === 'true') {
+                document.getElementById('login-overlay').style.opacity = "0";
+                setTimeout(() => {
+                    document.getElementById('login-overlay').style.display = "none";
+                    document.getElementById('main-body').classList.remove('overflow-hidden');
+                }, 500);
+            } else {
+                document.getElementById('login-overlay').style.display = "flex";
+                document.getElementById('main-body').classList.add('overflow-hidden');
+            }
+        }
+
+        // 초기 실행
+        checkAuthStatus();
+
+        // 엔터키 로그인 지원
+        document.getElementById('login-pw').addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') attemptLogin();
+        });
+
         // UI Helpers (전역 할당)
         window.toggleLogoInput = () => {
             const type = document.getElementById('p-logo-type').value;
@@ -194,16 +273,14 @@
             reader.readAsDataURL(file);
         };
 
-        // 데이터 삭제 함수 (전역 할당 필수)
+        // 데이터 삭제 함수
         window.deleteOrder = async (orderId) => {
             if(!confirm('해당 주문 내역을 삭제하시겠습니까?')) return;
             try {
                 const orderRef = doc(db, 'artifacts', appId, 'public', 'data', 'orders', orderId);
                 await deleteDoc(orderRef);
-                console.log("Order deleted:", orderId);
             } catch (error) {
                 console.error("Error deleting order:", error);
-                alert("삭제 중 오류가 발생했습니다.");
             }
         };
 
@@ -212,10 +289,8 @@
             try {
                 const productRef = doc(db, 'artifacts', appId, 'public', 'data', 'products', productId);
                 await deleteDoc(productRef);
-                console.log("Product deleted:", productId);
             } catch (error) {
                 console.error("Error deleting product:", error);
-                alert("삭제 중 오류가 발생했습니다.");
             }
         };
 
