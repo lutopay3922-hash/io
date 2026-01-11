@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Google Search Console Verification -->
+    <meta name="google-site-verification" content="Your_Verification_Code_Here" />
+    <meta name="description" content="로로핀 - 배달의민족, 기프트카드, 문화상품권 등 다양한 모바일 상품권을 가장 안전하고 빠르게 구매하세요.">
+    <meta name="keywords" content="로로핀, 기프트카드, 상품권 구매, 배민 상품권, 모바일 상품권, 루투페이">
     <title>로로핀 - 기프트카드의 모든것</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -139,7 +143,6 @@
             transform: rotate(-15deg);
         }
 
-        /* iPhone 12 Mini specific adjustments */
         @media (max-width: 390px) {
             .hero-title { font-size: 2.5rem; }
             .baemin-banner { padding: 1.5rem; }
@@ -158,7 +161,6 @@
             border-radius: inherit;
         }
 
-        /* Pagination Styles */
         .page-btn {
             width: 40px;
             height: 40px;
@@ -182,7 +184,6 @@
             border-color: rgba(168, 85, 247, 0.4);
         }
 
-        /* 큰 내비게이션 버튼 스타일 */
         .nav-btn-large {
             width: 48px;
             height: 48px;
@@ -311,14 +312,12 @@
 
     <!-- Gift Card Grid -->
     <section id="giftcards" class="max-w-7xl mx-auto px-5 md:px-6 py-12 md:py-20 scroll-mt-20">
-        <!-- 헤더: 제목은 왼쪽, 버튼은 맨 오른쪽 끝으로 배치 -->
         <div class="flex items-center justify-between mb-10 md:mb-16">
             <div class="flex items-center">
                 <h2 class="text-2xl md:text-4xl font-bold tracking-tight">인기 기프트카드</h2>
             </div>
             
             <div class="flex items-center space-x-3 md:space-x-4">
-                <!-- Navigation Buttons: Right Aligned & Larger -->
                 <button id="nav-prev" class="nav-btn-large" onclick="window.changePageByNav(-1)" disabled>
                     <i class="fas fa-chevron-left"></i>
                 </button>
@@ -332,10 +331,7 @@
             <div class="col-span-full py-20 text-center text-white/20 text-sm">상품 데이터를 불러오는 중입니다...</div>
         </div>
 
-        <!-- Pagination Controls (Bottom) -->
-        <div id="pagination-container" class="flex justify-center items-center space-x-3 mt-12 md:mt-16">
-            <!-- Buttons will be injected here -->
-        </div>
+        <div id="pagination-container" class="flex justify-center items-center space-x-3 mt-12 md:mt-16"></div>
     </section>
 
     <!-- Footer -->
@@ -344,7 +340,7 @@
             <div class="flex flex-col items-center text-center space-y-6">
                 <div class="flex items-center space-x-2 text-white/30">
                     <i class="fas fa-credit-card text-xs"></i>
-                    <span class="text-sm font-bold italic tracking-tighter">루투<span class="text-purple-500/50">페이</span></span>
+                    <span class="text-sm font-bold italic tracking-tighter">로로<span class="text-purple-500/50">핀</span></span>
                 </div>
                 
                 <div class="company-info space-y-2 text-[11px] md:text-xs text-white/40 font-medium leading-relaxed">
@@ -355,7 +351,7 @@
                         <span class="hidden md:inline text-white/10">|</span>
                         <span>사업자등록번호: 540-40-00028</span>
                     </p>
-                    <p>주소: 경기도 안양시 만안구 연현로 75길 13903 1층/p>
+                    <p>주소: 경기도 안양시 만안구 연현로 75길 13903 1층</p>
                     <p class="flex flex-wrap justify-center gap-x-3 gap-y-1">
                         <span>통신판매업 신고번호: 2015-안양만안-00105호</span>
                         <span class="hidden md:inline text-white/10">|</span>
@@ -375,9 +371,7 @@
         <div class="modal-content w-full max-w-[840px] max-h-[90vh] md:max-h-none overflow-y-auto bg-[#140e29] border border-white/10 rounded-[32px] md:rounded-[40px] shadow-2xl flex flex-col md:flex-row" onclick="event.stopPropagation()">
             <!-- Left Info Panel -->
             <div class="w-full md:w-[320px] bg-gradient-to-b from-purple-900/40 to-[#140e29] p-7 md:p-10 border-b md:border-b-0 md:border-r border-white/5">
-                <div id="modal-item-icon-bg" class="w-14 h-14 md:w-16 md:h-16 rounded-2xl md:rounded-3xl mb-6 md:mb-8 flex items-center justify-center shadow-2xl bg-gradient-to-br from-purple-500 to-indigo-600 overflow-hidden">
-                    <!-- Icon or Image placeholder -->
-                </div>
+                <div id="modal-item-icon-bg" class="w-14 h-14 md:w-16 md:h-16 rounded-2xl md:rounded-3xl mb-6 md:mb-8 flex items-center justify-center shadow-2xl bg-gradient-to-br from-purple-500 to-indigo-600 overflow-hidden"></div>
                 <h4 class="text-white/40 text-[9px] md:text-[10px] font-black uppercase tracking-widest mb-1 md:mb-2">Order Summary</h4>
                 <h3 id="modal-item-name" class="text-xl md:text-2xl font-black mb-1 text-white">상품명</h3>
                 <div class="space-y-4 py-4 md:py-6 border-y border-white/5 my-4 md:my-6">
@@ -398,7 +392,6 @@
                     <p class="text-[10px] md:text-xs text-white/40 mt-1 uppercase tracking-widest font-mono">Cloud Payment System</p>
                 </div>
                 <div class="space-y-6">
-                    <!-- Bank Info -->
                     <div class="space-y-3">
                         <label class="text-[9px] md:text-[10px] font-black text-purple-400 uppercase tracking-widest">입금 계좌</label>
                         <div class="p-4 md:p-5 custom-input rounded-xl md:rounded-2xl flex items-center justify-between">
@@ -410,7 +403,6 @@
                         </div>
                     </div>
                     
-                    <!-- Input Fields -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="space-y-2">
                             <label class="text-[9px] md:text-[10px] font-black text-purple-400 uppercase tracking-widest ml-1">입금자 성함</label>
@@ -455,8 +447,6 @@
 
         let user = null;
         let selectedProduct = null;
-        
-        // Pagination state
         let allProducts = [];
         let currentPage = 1;
         const itemsPerPage = 9;
@@ -501,7 +491,6 @@
             const totalPages = Math.ceil(allProducts.length / itemsPerPage);
             updateNavButtons(totalPages);
 
-            // Calculate slicing indices
             const startIndex = (currentPage - 1) * itemsPerPage;
             const endIndex = startIndex + itemsPerPage;
             const paginatedItems = allProducts.slice(startIndex, endIndex);
@@ -535,7 +524,6 @@
         function updateNavButtons(totalPages) {
             const prev = document.getElementById('nav-prev');
             const next = document.getElementById('nav-next');
-            
             if (prev) prev.disabled = currentPage <= 1;
             if (next) next.disabled = currentPage >= totalPages;
         }
@@ -546,7 +534,6 @@
             if (newPage >= 1 && newPage <= totalPages) {
                 currentPage = newPage;
                 renderProducts();
-                // 페이지 상단으로 부드럽게 이동
                 document.getElementById('giftcards').scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         };
@@ -555,9 +542,7 @@
             const container = document.getElementById('pagination-container');
             const totalPages = Math.ceil(allProducts.length / itemsPerPage);
             container.innerHTML = '';
-
             if (totalPages <= 1) return;
-
             for (let i = 1; i <= totalPages; i++) {
                 const btn = document.createElement('button');
                 btn.className = `page-btn ${currentPage === i ? 'active' : ''}`;
@@ -573,7 +558,6 @@
 
         function startRealtimeSync() {
             if (!user) return;
-
             const settingsRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main');
             onSnapshot(settingsRef, (snap) => {
                 if (snap.exists()) {
@@ -584,7 +568,6 @@
                     if (data.bannerDesc) document.getElementById('baemin-desc').innerText = data.bannerDesc;
                 }
             });
-
             const itemsRef = collection(db, 'artifacts', appId, 'public', 'data', 'products');
             onSnapshot(itemsRef, (snapshot) => {
                 allProducts = [];
@@ -593,7 +576,6 @@
                 });
                 renderProducts();
             });
-
             const feedRef = collection(db, 'artifacts', appId, 'public', 'data', 'liveFeed');
             onSnapshot(feedRef, (snapshot) => {
                 const container = document.getElementById('live-purchase-container');
@@ -621,14 +603,12 @@
             document.getElementById('modal-item-name').innerText = p.name;
             document.getElementById('modal-item-price').innerText = Number(p.price).toLocaleString() + '원';
             document.getElementById('modal-final-price').innerText = Number(p.price).toLocaleString() + '원';
-            
             const iconBg = document.getElementById('modal-item-icon-bg');
             if (p.logoType === 'image' && p.imageUrl) {
                 iconBg.innerHTML = `<img src="${p.imageUrl}" class="product-logo-img" onerror="this.src='https://placehold.co/200x200?text=Logo'">`;
             } else {
                 iconBg.innerHTML = `<i class="${p.icon || 'fas fa-gift'} text-2xl md:text-3xl text-white"></i>`;
             }
-            
             document.getElementById('payment-modal').style.display = 'flex';
         };
 
@@ -638,15 +618,12 @@
             const name = document.getElementById('sender-name').value.trim();
             const phone = document.getElementById('sender-phone').value.trim();
             const btn = document.getElementById('submit-payment');
-            
             if (!name) return showToast("오류", "입금자 성함을 입력해 주세요.");
             if (!phone) return showToast("오류", "휴대폰 번호를 입력해 주세요.");
             if (!user) return showToast("오류", "서버 연결 중...");
-            
             try {
                 btn.disabled = true;
                 btn.innerText = "처리 중...";
-                
                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'orders'), {
                     customerName: name,
                     customerPhone: phone,
@@ -656,14 +633,11 @@
                     createdAt: serverTimestamp(),
                     uid: user.uid
                 });
-                
                 await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main'), { totalSales: increment(1) });
-                
                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'liveFeed'), {
                     name: name.length > 2 ? name[0] + "*" + name[name.length-1] : name[0] + "*",
                     product: selectedProduct.name, price: selectedProduct.price, time: serverTimestamp()
                 });
-                
                 document.querySelector('.modal-content').innerHTML = `
                     <div class="w-full p-12 md:p-20 flex flex-col items-center text-center space-y-6 bg-[#1a142e]">
                         <div class="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg animate-bounce">
